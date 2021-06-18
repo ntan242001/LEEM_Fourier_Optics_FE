@@ -17,8 +17,20 @@ simulatingSpaceSize = 400 # total simulating space in nm
 simulatingSpaceTotalStep = 1 + 2**10 # total simulating steps
 
 constant_type = "IBM AC"
-object_type = "Step amplitude contrast"
+object_type = "Step amplitude object"
 
+# A function to set different defocus values
+def choose_defocus(defocus_type):
+    global delta_z
+    if defocus_type == "In-focus":
+        delta_z = 0
+        print("In-focus chosen.")
+    elif defocus_type == "Scherzer defocus":
+        delta_z = np.sqrt(3/2*C_3*lamda)
+        print("Scherzer defocus chosen.")
+    elif defocus_type == "A Phi Scherzer defocus":
+        delta_z = np.sqrt(9/64*C_5*lamda**2)
+        print("A Phi Scherzer defocus chosen.")
 
 
 ##################### Basic setting ####################
@@ -96,7 +108,6 @@ q_ill = alpha_ill / lamda
 
 ##################directly use delta_z#############
 delta_z_series = np.array([0])
-# delta_z_series = np.linspace(-100e-6,100e-6,31)
 ##################directly use delta_z#############
 
 ##################delta_z_star#################
@@ -144,7 +155,7 @@ if object_type == 'Sin amplitude':
     amp = np.sin(h/(simulatingSpaceSize/2)*2*np.pi)
     phase_shift = np.zeros_like(h)    
         
-if object_type == 'Step amplitude contrast':
+if object_type == 'Step amplitude object':
     K = 1
     h = np.ones_like(simulated_space)
     for counter, element in enumerate(simulated_space):
@@ -186,28 +197,8 @@ reversed_obj = obj[::-1] # the object is reversed in the lens, this line is to r
 print('Sample created.')
 print('Simulating')
 
-object_space = (create_simulated_space() + simulatingSpaceSize/simulatingSpaceTotalStep)
+object_space = create_simulated_space() + simulatingSpaceSize/simulatingSpaceTotalStep
 image_space = object_space #/M_L
-    
-def FO1D(z, zCounter):
-    R_0 = np.exp(1j * 2 * np.pi * (
-            C_3 * lamda ** 3 * (Q ** 4 - QQ ** 4) / 4 + C_5 * lamda ** 5 * (Q ** 6 - QQ ** 6) / 6 - z * lamda * (
-            Q ** 2 - QQ ** 2) / 2))
-    E_s = np.exp(-np.pi ** 2 * q_ill ** 2 * (
-            C_3 * lamda ** 3 * (Q ** 3 - QQ ** 3) + C_5 * lamda ** 5 * (Q ** 5 - QQ ** 5) - z * lamda * (
-            Q - QQ)) ** 2 / (4 * np.log(2)))
-
-    AR = np.multiply(np.multiply(np.multiply(A, R_0), E_s), E_ct)
-
-    for i in range(len(q)):
-        for j in range(i + 1, len(q)):
-            matrixI[:, zCounter] = matrixI[:, zCounter] + 2 * (
-                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * simulated_space)).real
-        
-
-    matrixI[:, zCounter] = matrixI[:, zCounter] + np.trace(AR) * np.ones_like(simulated_space)
-
-    return matrixI
 
 simulated_space = create_simulated_space()
 simulated_space *= 1e-9
@@ -221,12 +212,14 @@ F_wave_obj = np.fft.fftshift(np.fft.fft(wave_obj, simulatingSpaceTotalStep) * (1
 q = 1 / (simulated_space[1] - simulated_space[0]) * np.arange(0, simulatingSpaceTotalStep, 1) / (simulatingSpaceTotalStep)
 q = q - (np.max(q) - np.min(q)) / 2
 
+
 a = np.sum(np.abs(q) <= q_max)
 
 if len(q) > a:
-    q = q[int(np.ceil(simulatingSpaceTotalStep / 2 + 1 - (a - 1) / 2)):int(np.floor(simulatingSpaceTotalStep / 2 + 1 + (a + 1) / 2))]
-    F_wave_obj = F_wave_obj[
-                 int(np.ceil(simulatingSpaceTotalStep / 2 + 1 - (a - 1) / 2)):int(np.floor(simulatingSpaceTotalStep / 2 + 1 + (a + 1) / 2))]
+    min_index = int(np.ceil(simulatingSpaceTotalStep / 2 + 1 - (a - 1) / 2))
+    max_index = int(np.floor(simulatingSpaceTotalStep / 2 + 1 + (a + 1) / 2))
+    q = q[min_index:max_index]
+    F_wave_obj = F_wave_obj[min_index:max_index]
 
 Q, QQ = np.meshgrid(q, q)
 F_wave_obj_q, F_wave_obj_qq = np.meshgrid(F_wave_obj, np.conj(F_wave_obj))
@@ -238,12 +231,32 @@ E_ct = E_cc * np.exp(-np.pi ** 2 * (delta_fc * lamda * (Q ** 2 - QQ ** 2) + 1 / 
 
 matrixI = np.zeros((len(simulated_space), len(delta_z_series)), dtype=complex)
 
+def FO1D(z, z_index):
+    R_0 = np.exp(1j * 2 * np.pi * (
+            C_3 * lamda ** 3 * (Q ** 4 - QQ ** 4) / 4 + C_5 * lamda ** 5 * (Q ** 6 - QQ ** 6) / 6 - z * lamda * (
+            Q ** 2 - QQ ** 2) / 2))
+    E_s = np.exp(-np.pi ** 2 * q_ill ** 2 * (
+            C_3 * lamda ** 3 * (Q ** 3 - QQ ** 3) + C_5 * lamda ** 5 * (Q ** 5 - QQ ** 5) - z * lamda * (
+            Q - QQ)) ** 2 / (4 * np.log(2)))
+
+    AR = np.multiply(np.multiply(np.multiply(A, R_0), E_s), E_ct)
+
+    for i in range(len(q)):
+        for j in range(i + 1, len(q)):
+            matrixI[:, z_index] = matrixI[:, z_index] + 2 * (
+                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * simulated_space)).real
+        
+
+    matrixI[:, z_index] = matrixI[:, z_index] + np.trace(AR) * np.ones_like(simulated_space)
+
+    return matrixI
+
 # print("Task:", taskName)
 # print("Total Task:", len(delta_z_series))
 # print("Total Parallel Steps:", np.ceil(len(delta_z_series) / (multiprocessing.cpu_count() + numberOfThreads + 1)))
 
 with Parallel(n_jobs=numberOfThreads, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(FO1D)(z, zCounter) for zCounter, z in enumerate(delta_z_series))
+    parallelResult = parallel(delayed(FO1D)(z, z_index) for z_index, z in enumerate(delta_z_series))
 
 for mat in parallelResult:
     matrixI = matrixI + mat
@@ -252,7 +265,6 @@ matrixI = np.abs(matrixI)
 
 print('Simulation finished.')
 
-
 ######## Plotting ########
 
 def Image_Simulation():
@@ -260,8 +272,6 @@ def Image_Simulation():
 
     object_space = (create_simulated_space()+simulatingSpaceSize/simulatingSpaceTotalStep)
     image_space = object_space/M_L
-
-
 
     def object_plot():
         plt.figure(figsize=(5,8))
@@ -330,9 +340,9 @@ def Image_Simulation():
 
 ####################save the plot###############
 
-    resultPlotName = constant_type + object_type + startTimeStamp +'.png'
+#    resultPlotName = constant_type + object_type + startTimeStamp +'.png'
 # print("Saving result to:",resultPlotName)
-    plt.savefig(resultPlotName) # autosave can be muted.
+ #   plt.savefig(resultPlotName) # autosave can be muted.
     
 
 ####################save the plot###############
@@ -344,8 +354,6 @@ def Image_Simulation():
 def colormap_plotting():
     object_space = (create_simulated_space()+simulatingSpaceSize/simulatingSpaceTotalStep)
     image_space = object_space/M_L
-
-
 
     def object_plot():
         plt.figure(figsize=(5,8))
@@ -405,6 +413,3 @@ Image_Simulation()
 # colormap_plotting()
 
 end_time = str(time.time())
-np.save(end_time, matrixI)  # save the result as an numpy array
-np.savetxt(end_time + '.csv', matrixI.T, delimiter="," ) #save the result as an .csv, each row represents different defocus, each column represents different position. 
-print('Programme ended.')
