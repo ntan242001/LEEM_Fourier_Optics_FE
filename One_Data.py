@@ -218,6 +218,3 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
-
-
-
