@@ -202,7 +202,7 @@ for i in range(len(E_0_series)):
     x_84 = x_array_focus[I_84_index[0]]
     I_16_index = np.where(np.abs(matrixI_focus - I_16) == min(np.abs(matrixI_focus - I_16)))
     x_16 = x_array_focus[I_16_index[0]]
-    resolution_i = x_84 - x_16
+    resolution_i = x_16 - x_84
     resolution_list.append(resolution_i[0])
 ###
 
