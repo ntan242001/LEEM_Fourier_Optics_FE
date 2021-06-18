@@ -3,6 +3,10 @@ from sympy import Symbol
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
+import time
+
+
+t_0 = time.time()
 
 # A function to choose different LEEM parameters
 def choose_LEEM_type(LEEM_type_str):
@@ -51,7 +55,7 @@ def choose_LEEM_type(LEEM_type_str):
         
     elif LEEM_type == "Energy dependent":
         E = 15010  # eV  Nominal Energy After Acceleration
-        E_0_series = np.linspace(10, 100, 91)
+        E_0_series = np.linspace(10, 50, 6)
         alpha_ill = 0.1e-3  # rad Illumination divergence angle
         
         delta_E = 0.25  # eV  Energy Spread
@@ -82,9 +86,9 @@ print("Simulation start.")
 
 # Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**7  # total simulating steps
+simulating_steps = 1 + 2**10 # total simulating steps
 # An array of points in the x space
-x_array = np.linspace(-object_size/2, object_size/2, simulating_steps)
+x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
 object_phase = np.zeros_like(x_array)
 
@@ -128,7 +132,7 @@ def FO1D(E_0, E_0_index):
     # Shifting this to the centre at 0
     F_object_function = np.fft.fftshift(F_object_function)
     # An array of points in the q space, in SI unit
-    q = 1 / (object_size * 1e-9) * np.arange(0, simulating_steps, 1)
+    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
     # Shifting the q array to centre at 0 
     q = q - np.max(q) / 2
     
@@ -153,7 +157,7 @@ def FO1D(E_0, E_0_index):
         Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ))**2)
     
     # The envelop function by energy spread
-    E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q ** 2 - QQ ** 2))**(-1/2)
+    E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q**2 - QQ**2))**(-1/2)
     E_ct = E_cc * np.exp(-E_cc**2 * np.pi**2/(16*np.log(2)) * (delta_E/E)**2 * (C_c * lamda * (Q**2 - QQ**2) + 1/2*C_3c*lamda**3 * (Q**4 - QQ**4))**2)
     
     AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
@@ -176,5 +180,15 @@ for mat in parallelResult:
 matrixI = np.abs(matrixI)
 
 print('Simulation finished.')
+t_1 = time.time()
+
+print('Total time:', t_1-t_0)
+
+# Calculating Resolution
+
+
+
+
+
 
 
