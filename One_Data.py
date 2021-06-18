@@ -3,6 +3,11 @@ from sympy import Symbol
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
+import time
+
+
+t0 = time.time()
+
 
 # A function to choose different LEEM parameters
 def choose_LEEM_type(LEEM_type_str):
@@ -172,34 +177,37 @@ matrixI = np.abs(matrixI)
 
 print('Simulation finished.')
 
-'''
+# Choosing the region of interest
+a = 3992
+x_array_focus = x_array[a:simulating_steps - a]
+matrixI = matrixI[a:simulating_steps - a]
+
 # Calculating resolution
 I_max = max(matrixI)
 I_min = min(matrixI)
-
 I_84 = I_min + (I_max - I_min)*84/100
 I_16 = I_min + (I_max - I_min)*16/100
-
-I_84_index = matrixI.where(np.abs(matrixI - I_84) == min(np.abs(matrixI - I_84)))
-x_84 = x_array(I_84_index)
-
-I_16_index = matrixI.where(np.abs(matrixI - I_16) == min(np.abs(matrixI - I_16)))
-x_16 = x_array(I_16_index)
-
+I_84_index = np.where(np.abs(matrixI - I_84) == min(np.abs(matrixI - I_84)))
+x_84 = x_array_focus[I_84_index[0]]
+I_16_index = np.where(np.abs(matrixI - I_16) == min(np.abs(matrixI - I_16)))
+x_16 = x_array_focus[I_16_index[0]]
 resolution = x_84 - x_16
+print(resolution[0])
 
-print(resolution)
-'''
+t1 = time.time()
+
+print(t1 - t0)
+
 
 
 # plotting the points 
-plt.plot(x_array, matrixI)
+plt.plot(x_array_focus, matrixI)
 
 #plt.xlim(-10e-9, 10e-9)
 
 
-#plt.axvline(x= x_84)
-#plt.axvline(x= x_16)
+plt.axvline(x= x_84, linestyle = 'dashed')
+plt.axvline(x= x_16, linestyle = 'dashed')
 
 # naming the x axis
 plt.xlabel('Position x (m)')
@@ -210,15 +218,6 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
-
-
-
-
-
-
-
-
-
 
 
 
