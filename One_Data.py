@@ -82,7 +82,7 @@ print("Simulation start.")
 
 # Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**15  # total simulating steps
+simulating_steps = 1 + 2**13  # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -115,7 +115,6 @@ def FO1D(E_0, E_0_index):
     C_3c = 0
     # Fourth Rank Chromatic Aberration Coefficient in metre
     C_cc = 0
-
 # Finding the value of q_ap that gives the best resolution 
 q_ap = Symbol('q_ap', real = True)
 q_ap = solve(1/6*C_5* lamda**5 * q_ap**6 + 1/4*C_3*lamda**3 * q_ap**2+ - 1/2*delta_z*lamda*q_ap**2 - 1/4, q_ap)
@@ -173,10 +172,34 @@ matrixI = np.abs(matrixI)
 
 print('Simulation finished.')
 
+'''
+# Calculating resolution
+I_max = max(matrixI)
+I_min = min(matrixI)
+
+I_84 = I_min + (I_max - I_min)*84/100
+I_16 = I_min + (I_max - I_min)*16/100
+
+I_84_index = matrixI.where(np.abs(matrixI - I_84) == min(np.abs(matrixI - I_84)))
+x_84 = x_array(I_84_index)
+
+I_16_index = matrixI.where(np.abs(matrixI - I_16) == min(np.abs(matrixI - I_16)))
+x_16 = x_array(I_16_index)
+
+resolution = x_84 - x_16
+
+print(resolution)
+'''
+
+
 # plotting the points 
 plt.plot(x_array, matrixI)
 
-plt.xlim(-10e-9, 10e-9)
+#plt.xlim(-10e-9, 10e-9)
+
+
+#plt.axvline(x= x_84)
+#plt.axvline(x= x_16)
 
 # naming the x axis
 plt.xlabel('Position x (m)')
@@ -187,3 +210,15 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
