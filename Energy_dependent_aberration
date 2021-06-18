@@ -55,7 +55,7 @@ def choose_LEEM_type(LEEM_type_str):
         
     elif LEEM_type == "Energy dependent":
         E = 15010  # eV  Nominal Energy After Acceleration
-        E_0_series = np.linspace(10, 50, 6)
+        E_0_series = np.linspace(10, 100, 11)
         alpha_ill = 0.1e-3  # rad Illumination divergence angle
         
         delta_E = 0.25  # eV  Energy Spread
@@ -184,11 +184,44 @@ t_1 = time.time()
 
 print('Total time:', t_1-t_0)
 
-# Calculating Resolution
+### Making a list of resolution
+# Choosing the region of interest
+a = 485
+x_array_focus = x_array[a:simulating_steps - a]
+
+resolution_list = []
+for i in range(len(E_0_series)):
+    matrixI_focus = matrixI[a:simulating_steps - a,i]
+    
+    # Calculating resolution
+    I_max = max(matrixI_focus)
+    I_min = min(matrixI_focus)
+    I_84 = I_min + (I_max - I_min)*84/100
+    I_16 = I_min + (I_max - I_min)*16/100
+    I_84_index = np.where(np.abs(matrixI_focus - I_84) == min(np.abs(matrixI_focus - I_84)))
+    x_84 = x_array_focus[I_84_index[0]]
+    I_16_index = np.where(np.abs(matrixI_focus - I_16) == min(np.abs(matrixI_focus - I_16)))
+    x_16 = x_array_focus[I_16_index[0]]
+    resolution_i = x_84 - x_16
+    resolution_list.append(resolution_i[0])
+###
 
 
+# plotting the curves
+for i in range(len(E_0_series)):
+    plt.plot(x_array, matrixI[:, i])
 
+plt.xlim(-10e-9, 10e-9)
 
+# naming the x axis
+plt.xlabel('Position x (m)')
+# naming the y axis
+plt.ylabel('Instensity')
+  
+# giving a title to my graph
+plt.title('I(x)')
+
+plt.show()
 
 
 
