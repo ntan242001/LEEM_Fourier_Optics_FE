@@ -9,38 +9,18 @@ import time
 t_0 = time.time()
 
 # A function to choose different LEEM parameters
-def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
+def choose_LEEM_type(LEEM_type_str):
     global E, E_0, C_c, C_cc, C_3c, C_3, C_5, alpha_ap, alpha_ill, \
         delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, E_0_series
-    LEEM_type = LEEM_type_str
+    LEEM_type = LEEM_type_str   
     
-    if LEEM_type == "IBM":
-        if aberration_corrected == False:
+    if LEEM_type != "Energy dependent":
+        if LEEM_type == "IBM AC":
             E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 10  # eV  Energy at the sample
-            
-            C_c = -0.075  # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 23.09 # m   Third Rank Chromatic Aberration Coefficient
-            C_3c = -59.37  # m   Forth Rank Chromatic Aberration Coefficient
-            
-            C_3 = 0.345  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
-            
-            alpha_ap = 2.34e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
-            
-            delta_E = 0.25  # eV  Energy Spread
-            M_L = 0.653  # Lateral Magnification
-            print("IBM NAC chosen.")
-            
-        elif aberration_corrected == True:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 10  # eV  Energy at the sample
-            
+            E_0 = 10  # eV  Starting Energy
             C_c = 0  # m   Second Rank Chromatic Aberration Coefficient
             C_cc = 27.9 # m   Third Rank Chromatic Aberration Coefficient
             C_3c = -67.4 # m   Forth Rank Chromatic Aberration Coefficient
-            
             C_3 = 0  # m   Spherical Aberration Coefficient
             C_5 = 92.8
         
@@ -50,7 +30,23 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             delta_E = 0.25  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
             print("IBM AC chosen.")
+    
+        elif LEEM_type =="IBM NAC":
+            E = 15010  # eV  Nominal Energy After Acceleration
+            E_0 = 10  # eV  Starting Energy
+            C_c = -0.075  # m  Second Rank Chromatic Aberration Coefficient
+            C_cc = 23.09 # m   Third Rank Chromatic Aberration Coefficient
+            C_3c = -59.37  # m   Forth Rank Chromatic Aberration Coefficient
+            C_3 = 0.345  # m  Third Order Spherical Aberration Coefficient
+            C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
             
+            alpha_ap = 2.34e-3  # rad Aperture angle
+            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            
+            delta_E = 0.25  # eV  Energy Spread
+            M_L = 0.653  # Lateral Magnification
+            print("IBM NAC chosen.")
+        
         lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E)
         lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0)
     
@@ -58,47 +54,18 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
         q_ill = alpha_ill / lamda
         
     elif LEEM_type == "Energy dependent":
-        if aberration_corrected == False:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
-            kappa = np.sqrt(E/E_0)
-            
-            C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 0.5918 * kappa**(3/2) - 87.063 # m   Third Rank Chromatic Aberration Coefficient
-            C_3c = -1.2141 * kappa**(3/2) + 169.41  # m   Forth Rank Chromatic Aberration Coefficient
-            
-            C_3 = 0.0297 * kappa**(1/2) + 0.1626  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
-            
-            delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
-            M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
-            q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")
-            
-        if aberration_corrected == True:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample
-            kappa = np.sqrt(E/E_0)
-            
-            C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 0.5984 * kappa**(3/2) - 84.002 # m   Third Rank Chromatic Aberration Coefficient 
-            C_3c = -1.1652 * kappa**(3/2) + 153.58  # m   Forth Rank Chromatic Aberration Coefficient  
-            
-            C_3 = 0  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
-            
-            delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
-            M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
-            q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")    
+        E = 15010  # eV  Nominal Energy After Acceleration
+        E_0_series = np.linspace(10, 100, 11)
+        alpha_ill = 0.1e-3  # rad Illumination divergence angle
+        
+        delta_E = 0.25  # eV  Energy Spread
+        M_L = 0.653  # Lateral Magnification
+        
+        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
+        q_ill = alpha_ill / lamda
+        print("Energy dependent simulation chosen.")
 
-choose_LEEM_type("Energy dependent", aberration_corrected = False)
+choose_LEEM_type("Energy dependent")
 
 # A function to set different defocus values
 def choose_defocus(defocus_type):
@@ -255,6 +222,3 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
-
-
-
