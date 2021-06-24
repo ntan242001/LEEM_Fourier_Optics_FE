@@ -76,7 +76,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
             q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV simulation chosen.")
+            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")
             
         if aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
@@ -96,7 +96,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
             q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV simulation chosen.")    
+            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")    
 
 choose_LEEM_type("Energy dependent", aberration_corrected = False)
 
