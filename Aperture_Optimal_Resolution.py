@@ -137,7 +137,7 @@ object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
 object_function = object_function[::-1]    
 
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(5*1e-5, 9*1e-3, 200)
+alpha_ap_series = np.linspace(1e-4, 6*1e-3, 20)
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I(x) at different values of q_ap
@@ -212,7 +212,7 @@ print('Total time:', t_1-t_0)
 
 ### Making a list of resolution
 # Choosing the region of interest
-interest_idx = 485
+interest_idx = 100
 x_array_focus = x_array[interest_idx:simulating_steps - interest_idx]
 
 resolution_list = []
@@ -233,18 +233,20 @@ for i in range(len(q_ap_series)):
 ###
 
 
-# plotting R(alpha_ap)
-plt.semilogx(alpha_ap_series, resolution_list)
+# plotting the curves
+for i in range(len(alpha_ap_series)):
+    alpha_ap = alpha_ap_series[i]*1000
+    plt.plot(x_array, matrixI[:, i], label= "{:.2f}".format(round(alpha_ap, 3)) + 'mrad')
 
 #plt.xlim(-10e-9, 10e-9)
 
 # naming the x axis
-plt.xlabel('Aperture angle (rad)')
+plt.xlabel('Position x (m)')
 # naming the y axis
-plt.ylabel('Resolution')
+plt.ylabel('Instensity')
   
 # giving a title to my graph
-plt.title('R(alpha_ap)')
+plt.title('I(x)')
 
 plt.show()
 
