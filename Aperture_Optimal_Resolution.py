@@ -137,7 +137,7 @@ object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
 object_function = object_function[::-1]    
 
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(1e-4, 6*1e-3, 20)
+alpha_ap_series = np.linspace(1e-3, 6e-3, 30)
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I(x) at different values of q_ap
@@ -210,7 +210,7 @@ t_1 = time.time()
 
 print('Total time:', t_1-t_0)
 
-
+'''
 resolution_list = []
 for i in range(len(q_ap_series)):
     matrixI_i = matrixI[:, i]
@@ -219,6 +219,7 @@ for i in range(len(q_ap_series)):
     for j in range(half_steps):
         if matrixI_i[half_steps+j] <= I_min:
             I_min = matrixI_i[half_steps+j]
+            idx_min = half_steps+j
         else:
             break
         
@@ -226,21 +227,25 @@ for i in range(len(q_ap_series)):
     for j in range(half_steps):
         if matrixI_i[half_steps-j] >= I_max:
             I_max = matrixI_i[half_steps-j]
+            idx_max = half_steps-j
         else:
             break
-        
+    
+       
     I_84 = I_min + (I_max - I_min)*84/100
     I_16 = I_min + (I_max - I_min)*16/100
+    
     I_84_index = np.where(np.abs(matrixI_i - I_84) == min(np.abs(matrixI_i - I_84)))
     x_84 = x_array[I_84_index[0]]
     I_16_index = np.where(np.abs(matrixI_i - I_16) == min(np.abs(matrixI_i - I_16)))
     x_16 = x_array[I_16_index[0]]
     resolution_i = x_16 - x_84
-    resolution_list.append(resolution_i[0])
+    resolution_i = x_array[idx_max] - x_array[idx_min]
+    resolution_list.append(resolution_i)
     
 plt.plot(alpha_ap_series, resolution_list)
 
-'''
+
 ### Making a list of resolution
 # Choosing the region of interest
 interest_idx = 0
@@ -262,24 +267,24 @@ for i in range(len(q_ap_series)):
     resolution_i = x_16 - x_84
     resolution_list.append(resolution_i[0])
 ###
-
+'''
 
 # plotting the curves
 for i in range(len(alpha_ap_series)):
-    alpha_ap = alpha_ap_series[i]*1000
     plt.plot(x_array, matrixI[:, i])
+    
+    plt.xlim(-10e-9, 10e-9)
 
-#plt.xlim(-10e-9, 10e-9)
+    # naming the x axis
+    plt.xlabel('Position x (m)')
+    # naming the y axis
+    plt.ylabel('Instensity')
+      
+    # giving a title to my graph
+    plt.title('I(x)')
+    
+    plt.show()
 
-# naming the x axis
-plt.xlabel('Position x (m)')
-# naming the y axis
-plt.ylabel('Instensity')
-  
-# giving a title to my graph
-plt.title('I(x)')
 
-plt.show()
-'''
 
 
