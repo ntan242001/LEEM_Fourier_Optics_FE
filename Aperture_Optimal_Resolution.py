@@ -210,9 +210,40 @@ t_1 = time.time()
 
 print('Total time:', t_1-t_0)
 
+
+resolution_list = []
+for i in range(len(q_ap_series)):
+    matrixI_i = matrixI[:, i]
+    half_steps = int(simulating_steps/2)
+    I_min = matrixI_i[half_steps]
+    for j in range(half_steps):
+        if matrixI_i[half_steps+j] <= I_min:
+            I_min = matrixI_i[half_steps+j]
+        else:
+            break
+        
+    I_max = matrixI_i[half_steps]
+    for j in range(half_steps):
+        if matrixI_i[half_steps-j] >= I_max:
+            I_max = matrixI_i[half_steps-j]
+        else:
+            break
+        
+    I_84 = I_min + (I_max - I_min)*84/100
+    I_16 = I_min + (I_max - I_min)*16/100
+    I_84_index = np.where(np.abs(matrixI_i - I_84) == min(np.abs(matrixI_i - I_84)))
+    x_84 = x_array[I_84_index[0]]
+    I_16_index = np.where(np.abs(matrixI_i - I_16) == min(np.abs(matrixI_i - I_16)))
+    x_16 = x_array[I_16_index[0]]
+    resolution_i = x_16 - x_84
+    resolution_list.append(resolution_i[0])
+    
+plt.plot(alpha_ap_series, resolution_list)
+
+'''
 ### Making a list of resolution
 # Choosing the region of interest
-interest_idx = 100
+interest_idx = 0
 x_array_focus = x_array[interest_idx:simulating_steps - interest_idx]
 
 resolution_list = []
@@ -236,7 +267,7 @@ for i in range(len(q_ap_series)):
 # plotting the curves
 for i in range(len(alpha_ap_series)):
     alpha_ap = alpha_ap_series[i]*1000
-    plt.plot(x_array, matrixI[:, i], label= "{:.2f}".format(round(alpha_ap, 3)) + 'mrad')
+    plt.plot(x_array, matrixI[:, i])
 
 #plt.xlim(-10e-9, 10e-9)
 
@@ -249,6 +280,6 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
-
+'''
 
 
