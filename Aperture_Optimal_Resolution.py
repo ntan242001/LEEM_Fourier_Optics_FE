@@ -1,9 +1,8 @@
-from sympy.solvers import solve
-from sympy import Symbol
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import time
+import csv
 
 
 t_0 = time.time()
@@ -119,7 +118,7 @@ print("Simulation start.")
 
 # Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**13 # total simulating steps
+simulating_steps = 1 + 2**15 # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -137,7 +136,7 @@ object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
 object_function = object_function[::-1]    
 
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(8e-4, 2.2*1e-3, 100)
+alpha_ap_series = np.linspace(5e-4, 1e-3, 50)
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I(x) at different values of q_ap
@@ -210,7 +209,7 @@ t_1 = time.time()
 
 print('Total time:', t_1-t_0)
 
-
+# Finding a list of resolutions corresponding to different aperture angles
 resolution_list = []
 for i in range(len(q_ap_series)):
     matrixI_i = matrixI[:, i]
@@ -247,29 +246,16 @@ for i in range(len(q_ap_series)):
     
 plt.plot(alpha_ap_series, resolution_list)
 
-'''
-### Making a list of resolution
-# Choosing the region of interest
-interest_idx = 0
-x_array_focus = x_array[interest_idx:simulating_steps - interest_idx]
-resolution_list = []
-for i in range(len(q_ap_series)):
-    matrixI_focus = matrixI[interest_idx:simulating_steps - interest_idx,i]
+with open('resolution_aperture_IBMnac.csv', 'a') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',')
+    writer.writerow(['aperture_angle (mrad)', 'resolution (nm)'])
     
-    # Calculating resolution
-    I_max = max(matrixI_focus)
-    I_min = min(matrixI_focus)
-    I_84 = I_min + (I_max - I_min)*84/100
-    I_16 = I_min + (I_max - I_min)*16/100
-    I_84_index = np.where(np.abs(matrixI_focus - I_84) == min(np.abs(matrixI_focus - I_84)))
-    x_84 = x_array_focus[I_84_index[0]]
-    I_16_index = np.where(np.abs(matrixI_focus - I_16) == min(np.abs(matrixI_focus - I_16)))
-    x_16 = x_array_focus[I_16_index[0]]
-    resolution_i = x_16 - x_84
-    resolution_list.append(resolution_i[0])
-###
+    for i in range(len(alpha_ap_series)):
+        writer.writerow([round(1e3 * alpha_ap_series[i], 5), round(1e9 * resolution_list[i], 5)])
+ 
+    csvfile.close()
 
-
+'''
 # plotting the curves
 for i in range(len(alpha_ap_series)):
     plt.plot(x_array, matrixI[:, i])
