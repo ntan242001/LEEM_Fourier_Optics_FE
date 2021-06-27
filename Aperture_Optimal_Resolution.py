@@ -98,7 +98,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             q_ill = alpha_ill / lamda
             print("Custom nac LEEM at " + str(E_0) + "eV chosen.")    
 
-choose_LEEM_type("Energy dependent", aberration_corrected = False)
+choose_LEEM_type("IBM", aberration_corrected = False)
 
 # A function to set different defocus values
 def choose_defocus(defocus_type):
@@ -119,7 +119,7 @@ print("Simulation start.")
 
 # Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**10 # total simulating steps
+simulating_steps = 1 + 2**13 # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -137,7 +137,7 @@ object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
 object_function = object_function[::-1]    
 
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(1e-3, 6e-3, 30)
+alpha_ap_series = np.linspace(8e-4, 2.2*1e-3, 100)
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I(x) at different values of q_ap
@@ -210,7 +210,7 @@ t_1 = time.time()
 
 print('Total time:', t_1-t_0)
 
-'''
+
 resolution_list = []
 for i in range(len(q_ap_series)):
     matrixI_i = matrixI[:, i]
@@ -231,26 +231,27 @@ for i in range(len(q_ap_series)):
         else:
             break
     
-       
+    # The region of interest to find the resolution
+    x_array_focus = x_array[idx_max:idx_min]
+    matrixI_i_focus = matrixI_i[idx_max:idx_min]
+    
     I_84 = I_min + (I_max - I_min)*84/100
     I_16 = I_min + (I_max - I_min)*16/100
     
-    I_84_index = np.where(np.abs(matrixI_i - I_84) == min(np.abs(matrixI_i - I_84)))
-    x_84 = x_array[I_84_index[0]]
-    I_16_index = np.where(np.abs(matrixI_i - I_16) == min(np.abs(matrixI_i - I_16)))
-    x_16 = x_array[I_16_index[0]]
+    I_84_index = np.where(np.abs(matrixI_i_focus - I_84) == min(np.abs(matrixI_i_focus - I_84)))
+    x_84 = x_array_focus[I_84_index[0]]
+    I_16_index = np.where(np.abs(matrixI_i_focus - I_16) == min(np.abs(matrixI_i_focus - I_16)))
+    x_16 = x_array_focus[I_16_index[0]]
     resolution_i = x_16 - x_84
-    resolution_i = x_array[idx_max] - x_array[idx_min]
-    resolution_list.append(resolution_i)
+    resolution_list.append(resolution_i[0])
     
 plt.plot(alpha_ap_series, resolution_list)
 
-
+'''
 ### Making a list of resolution
 # Choosing the region of interest
 interest_idx = 0
 x_array_focus = x_array[interest_idx:simulating_steps - interest_idx]
-
 resolution_list = []
 for i in range(len(q_ap_series)):
     matrixI_focus = matrixI[interest_idx:simulating_steps - interest_idx,i]
@@ -267,7 +268,7 @@ for i in range(len(q_ap_series)):
     resolution_i = x_16 - x_84
     resolution_list.append(resolution_i[0])
 ###
-'''
+
 
 # plotting the curves
 for i in range(len(alpha_ap_series)):
@@ -284,7 +285,4 @@ for i in range(len(alpha_ap_series)):
     plt.title('I(x)')
     
     plt.show()
-
-
-
-
+'''
