@@ -194,15 +194,7 @@ q_ap_series = alpha_ap_series/lamda
 matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
 
 
-def FO1D(q_ap, q_ap_index):
-    '''# Finding the value of q_ap that gives the best resolution 
-    q_ap = Symbol('q_ap', real = True)
-    q_ap = solve(1/6*C_5* lamda**5 * q_ap**6 + 1/4*C_3*lamda**3 * q_ap**2+ - 1/2*delta_z*lamda*q_ap**2 - 1/4, q_ap)
-    for sol in q_ap:
-        if sol <= 0:
-            q_ap.remove(sol)        
-    q_ap = min(q_ap)'''
-    
+def FO1D(q_ap, q_ap_index):    
     # The Fourier Transform of the Object Wave Function
     F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
     # Shifting this to the centre at 0
