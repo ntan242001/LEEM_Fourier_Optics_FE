@@ -120,7 +120,7 @@ choose_defocus("In-focus")
 
 
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**15 # total simulating steps
+simulating_steps = 1 + 2**15    # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -174,6 +174,7 @@ def create_object(object_type, k = 1):
 create_object("Error function phase object", k = 1)
 
 ##################################
+######## End of Preamble #########
 ##################################
 
 
@@ -257,7 +258,18 @@ matrixI = np.abs(matrixI)
 print('Simulation finished.')
 t_1 = time.time()
 
-print('Total time:', t_1-t_0)
+print('Total time:' + str(round((t_1-t_0)/60, 3)) + 'minutes')
+
+##################################
+######## End of Main Part ########
+##################################
+
+
+
+
+##################################
+######## Analysing Results #######
+##################################
 
 # Finding a list of resolutions corresponding to different aperture angles
 resolution_list = []
@@ -327,3 +339,7 @@ for i in range(len(alpha_ap_series)):
     
     plt.show()
 '''
+################################
+###### End of Programme ########
+################################
+
