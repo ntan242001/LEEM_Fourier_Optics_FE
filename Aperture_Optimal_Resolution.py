@@ -125,8 +125,9 @@ simulating_steps = 1 + 2**15    # total simulating steps
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
 # A function to choose different sample object function
-def create_object(object_type, k = 1):
-    global object_function, object_amplitude, object_phase
+def create_object(object_type_str, k = 1):
+    global object_type, object_function, object_amplitude, object_phase
+    object_type = object_type_str
     if object_type == "Step amplitude object":
     # Creating an 1:1/sqrt(2) step amplitude object whose phase is uniformly set to 0
         object_phase = np.zeros_like(x_array)
