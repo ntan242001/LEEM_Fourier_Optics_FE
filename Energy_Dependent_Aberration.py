@@ -1,14 +1,18 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from sympy.solvers import solve
-from sympy import Symbol
+from joblib import Parallel, delayed
 import time
+import csv
+import math
 
+##############################
+######### Preamble ###########
+##############################
 
 t_0 = time.time()
 
 # A function to choose different LEEM parameters
-def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
+def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
     global E, E_0, C_c, C_cc, C_3c, C_3, C_5, alpha_ap, alpha_ill, \
         delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, E_0_series
     LEEM_type = LEEM_type_str
@@ -53,8 +57,8 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
         lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E)
         lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0)
     
-        q_ap = alpha_ap / lamda
-        q_ill = alpha_ill / lamda
+        q_ap = alpha_ap/lamda
+        q_ill = alpha_ill/lamda
         
     elif LEEM_type == "Energy dependent":
         if aberration_corrected == False:
@@ -72,10 +76,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             delta_E = 0.25  # eV  Energy Spread
             alpha_ill = 0.1e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
-            q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV simulation chosen.")
+            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")
             
         if aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
@@ -92,12 +93,17 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = True):
             delta_E = 0.25  # eV  Energy Spread
             alpha_ill = 0.1e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) #in metre
-            q_ill = alpha_ill / lamda
-            print("Custom nac LEEM at " + str(E_0) + "eV simulation chosen.")    
+            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")   
+        
+        alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
+        
+        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+        lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0) # in metre
+        
+        q_ap = alpha_ap/lamda
+        q_ill = alpha_ill/lamda
 
-choose_LEEM_type("Energy dependent", aberration_corrected = False)
+choose_LEEM_type("IBM", aberration_corrected = False)
 
 # A function to set different defocus values
 def choose_defocus(defocus_type):
@@ -108,43 +114,81 @@ def choose_defocus(defocus_type):
     elif defocus_type == "Scherzer defocus":
         delta_z = np.sqrt(3/2*C_3*lamda)
         print("Scherzer defocus chosen.")
-    elif defocus_type == "A Phi Scherzer defocus":
+    elif defocus_type == "A-Phi Scherzer defocus":
         delta_z = np.sqrt(9/64*C_5*lamda**2)
-        print("A Phi Scherzer defocus chosen.")
+        print("A-Phi Scherzer defocus chosen.")
 
 choose_defocus("In-focus")
 
-# Finding the value of q_ap that gives the best resolution 
-q_ap = Symbol('q_ap', real = True)
-q_ap = solve(1/6*C_5* lamda**5 * q_ap**6 + 1/4*C_3*lamda**3 * q_ap**2+ - 1/2*delta_z*lamda*q_ap**2 - 1/4, q_ap)
-for sol in q_ap:
-    if sol <= 0:
-        q_ap.remove(sol)        
-q_ap = min(q_ap)
-        
 
-
-
-print("Simulation start.")
-
-# Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**13  # total simulating steps
+simulating_steps = 1 + 2**15    # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
-object_phase = np.zeros_like(x_array)
 
-object_amplitude = np.ones_like(x_array)
+# A function to choose different sample object function
+def create_object(object_type_str, k = 1):
+    global object_type, object_function, object_amplitude, object_phase
+    object_type = object_type_str
+    if object_type == "Step amplitude object":
+    # Creating an 1:1/sqrt(2) step amplitude object whose phase is uniformly set to 0
+        object_phase = np.zeros_like(x_array)
+        
+        object_amplitude = np.ones_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            if element > 0:
+                object_amplitude[counter] = 1/np.sqrt(2)
+    
+    if object_type == "Error function amplitude object":
+    # Creating an error function amplitude object whose phase is uniformly set to 0         
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.zeros_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            object_amplitude[counter] = math.erf(element*1e8)/2*(1-1/np.sqrt(2)) + (1+1/np.sqrt(2))/2
+            
+        object_amplitude = object_amplitude[::-1]
+    
+    if object_type == "Step phase object":
+    # Creating a k.pi step phase object whose amplitude is uniformly set to 1        
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.zeros_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            if element > 0:
+                object_phase[counter] = k * np.pi
+     
+    
+    if object_type == "Error function phase object":
+    # Creating an error function phase object whose amplitude is uniformly set to 1
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.ones_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            object_phase[counter] = (math.erf(element*1e8)+1)/2*k*np.pi
+        
+    # Object function
+    object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
 
-for counter, element in enumerate(x_array):
-    if element > 0:
-        object_amplitude[counter] = 1/np.sqrt(2)
+create_object("Step phase object", k = 1)
 
-# Object function
-object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
+##################################
+######## End of Preamble #########
+##################################
+
+
+
+##################################
+########### Main Part ############
+##################################
+print("Simulation start.")
 # The object image is reversed through the lens
-object_function = object_function[::-1]    
+object_function_reversed = object_function[::-1] 
 
 # Initialising the series of function I(x) at different values of E_0
 matrixI = np.zeros_like(x_array, dtype=complex)
@@ -200,36 +244,67 @@ print('Simulation finished.')
 
 t_1 = time.time()
 
-print('Total time:', t_1-t_0)
+print('Total time:' + str(round((t_1-t_0)/60, 3)) + 'minutes')
+
+##################################
+######## End of Main Part ########
+##################################
 
 
-# Choosing the region of interest
-a = 3992
-x_array_focus = x_array[a:simulating_steps - a]
-matrixI = matrixI[a:simulating_steps - a]
-
-# Calculating resolution
-I_max = max(matrixI)
-I_min = min(matrixI)
-I_84 = I_min + (I_max - I_min)*84/100
-I_16 = I_min + (I_max - I_min)*16/100
-I_84_index = np.where(np.abs(matrixI - I_84) == min(np.abs(matrixI - I_84)))
-x_84 = x_array_focus[I_84_index[0]]
-I_16_index = np.where(np.abs(matrixI - I_16) == min(np.abs(matrixI - I_16)))
-x_16 = x_array_focus[I_16_index[0]]
-resolution = x_84 - x_16
-print(resolution[0])
 
 
-# plotting the points 
-plt.plot(x_array_focus, matrixI)
+##################################
+######## Analysing Results #######
+##################################
 
-#plt.xlim(-10e-9, 10e-9)
+######## Calculating the resolution for the phase object ########
+if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
+    half_steps = int(simulating_steps/2)
+    I_min = matrixI[half_steps]
+    for j in range(half_steps):
+        if matrixI[half_steps+j] <= I_min:
+            I_min = matrixI[half_steps+j]
+            idx_min = half_steps+j
+        else:
+            break
+        
+    I_max = matrixI[half_steps]
+    for j in range(half_steps):
+        if matrixI[half_steps-j] >= I_max:
+            I_max = matrixI[half_steps-j]
+            idx_max = half_steps-j
+        else:
+            break
+    
+    # The region of interest to find the resolution
+    x_array_focus = x_array[idx_max:idx_min]
+    matrixI_focus = matrixI[idx_max:idx_min]
+    
+    I_84 = I_min + (I_max - I_min)*84/100
+    I_16 = I_min + (I_max - I_min)*16/100
+    
+    I_84_index = np.where(np.abs(matrixI_focus - I_84) == min(np.abs(matrixI_focus - I_84)))
+    x_84 = x_array_focus[I_84_index[0]]
+    I_16_index = np.where(np.abs(matrixI_focus - I_16) == min(np.abs(matrixI_focus - I_16)))
+    x_16 = x_array_focus[I_16_index[0]]
+    resolution = x_16 - x_84
+    resolution = resolution[0]
 
+if object_type == "Step phase object" or object_type == "Error function phase object":
+    resolution = 0
 
-plt.axvline(x= x_84, linestyle = 'dashed')
-plt.axvline(x= x_16, linestyle = 'dashed')
+print("Resolution R = " + str(round(resolution*1e9, 4)) + "nm")
 
+'''
+########## Plotting the object ###########
+plt.plot(x_array, object_amplitude)
+plt.plot(x_array, object_phase)
+'''
+
+########## Plotting the curve ############
+plt.plot(x_array, matrixI[:, i])
+
+plt.xlim(-10e-9, 10e-9)
 # naming the x axis
 plt.xlabel('Position x (m)')
 # naming the y axis
@@ -239,3 +314,7 @@ plt.ylabel('Instensity')
 plt.title('I(x)')
 
 plt.show()
+
+################################
+###### End of Programme ########
+################################
