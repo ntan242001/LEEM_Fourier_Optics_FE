@@ -3,7 +3,11 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import time
 import csv
+import math
 
+##############################
+######### Preamble ###########
+##############################
 
 t_0 = time.time()
 
@@ -114,29 +118,64 @@ def choose_defocus(defocus_type):
 
 choose_defocus("In-focus")
 
-print("Simulation start.")
 
-# Creating a 1:1/sqrt(2) amplitude object whose phase is uniformly set to 0
 object_size = 400               # simulating object size in nm
 simulating_steps = 1 + 2**15 # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
-object_phase = np.zeros_like(x_array)
+# A function to choose different sample object function
+def create_object(object_type):
+    global object_function, object_amplitude, object_phase
+    if object_type == "Step amplitude object":
+    # Creating an 1:1/sqrt(2) step amplitude object whose phase is uniformly set to 0
+        object_phase = np.zeros_like(x_array)
+        
+        object_amplitude = np.ones_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            if element > 0:
+                object_amplitude[counter] = 1/np.sqrt(2)
+    
+    if object_type == "Error function amplitude object":
+    # Creating an error function amplitude object whose phase is uniformly set to 0         
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.zeros_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            object_amplitude[counter] = math.erf(element*1e8)/2*(1-1/np.sqrt(2)) + (1+1/np.sqrt(2))/2
+            
+        object_amplitude = object_amplitude[::-1]
+    
+    if object_type == "Error function phase object":
+    # Creating an error function phase object whose amplitude is uniformly set to 1         
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.ones_like(x_array)
+        
+        for counter, element in enumerate(x_array):
+            object_phase[counter] = (math.erf(element*1e9)+1)/2
+        
+    # Object function
+    object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
 
-object_amplitude = np.ones_like(x_array)
+create_object("Step amplitude object")
 
-for counter, element in enumerate(x_array):
-    if element > 0:
-        object_amplitude[counter] = 1/np.sqrt(2)
+##################################
+##################################
 
-# Object function
-object_function = np.multiply(object_amplitude, np.exp(1j * object_phase))
+
+
+##################################
+########### Main Part ############
+##################################
+print("Simulation start.")
 # The object image is reversed through the lens
-object_function = object_function[::-1]    
-
+object_function_reversed = object_function[::-1] 
+    
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(5e-4, 1e-3, 50)
+alpha_ap_series = np.linspace(0.5*1e-3, 1*1e-3, 20)
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I(x) at different values of q_ap
@@ -153,7 +192,7 @@ def FO1D(q_ap, q_ap_index):
     q_ap = min(q_ap)'''
     
     # The Fourier Transform of the Object Wave Function
-    F_object_function = np.fft.fft(object_function, simulating_steps) * (1 / simulating_steps)
+    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
     # Shifting this to the centre at 0
     F_object_function = np.fft.fftshift(F_object_function)
     # An array of points in the q space, in SI unit
@@ -246,6 +285,7 @@ for i in range(len(q_ap_series)):
     
 plt.plot(alpha_ap_series, resolution_list)
 
+# Save this list of resolution into a csv file
 with open('resolution_aperture_IBMnac.csv', 'a') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['aperture_angle (mrad)', 'resolution (nm)'])
@@ -256,6 +296,10 @@ with open('resolution_aperture_IBMnac.csv', 'a') as csvfile:
     csvfile.close()
 
 '''
+# Plotting the object
+plt.plot(x_array, object_amplitude)
+plt.plot(x_array, object_phase)
+
 # plotting the curves
 for i in range(len(alpha_ap_series)):
     plt.plot(x_array, matrixI[:, i])
