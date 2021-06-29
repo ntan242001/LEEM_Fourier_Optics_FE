@@ -12,10 +12,11 @@ import math
 t_0 = time.time()
 
 # A function to choose different LEEM parameters
-def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
+def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
     global E, E_0, C_c, C_cc, C_3c, C_3, C_5, alpha_ap, alpha_ill, \
-        delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, E_0_series
+        delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, aberration_corrected
     LEEM_type = LEEM_type_str
+    aberration_corrected = aberration_corrected_bool
     
     if LEEM_type == "IBM":
         if aberration_corrected == False:
@@ -34,7 +35,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
             
             delta_E = 0.25  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
-            print("IBM NAC chosen.")
+            print("IBM nac chosen.")
             
         elif aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
@@ -52,7 +53,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
         
             delta_E = 0.25  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
-            print("IBM AC chosen.")
+            print("IBM ac chosen.")
             
         lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E)
         lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0)
@@ -76,7 +77,11 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
             delta_E = 0.25  # eV  Energy Spread
             alpha_ill = 0.1e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
-            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")
+            
+            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+            alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
+            
+            print("Custom nac LEEM at E_0 = " + str(E_0) + " eV chosen.")
             
         if aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
@@ -93,17 +98,18 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
             delta_E = 0.25  # eV  Energy Spread
             alpha_ill = 0.1e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
-            print("Custom nac LEEM at " + str(E_0) + "eV chosen.")   
+            
+            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+            alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
+            
+            print("Custom ac LEEM at E_0 = " + str(E_0) + " eV chosen.")   
         
-        alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
-        
-        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
         lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0) # in metre
         
         q_ap = alpha_ap/lamda
         q_ill = alpha_ill/lamda
 
-choose_LEEM_type("IBM", aberration_corrected = False)
+choose_LEEM_type("IBM", aberration_corrected_bool = True)
 
 # A function to set different defocus values
 def choose_defocus(defocus_type):
@@ -244,7 +250,7 @@ print('Simulation finished.')
 
 t_1 = time.time()
 
-print('Total time:' + str(round((t_1-t_0)/60, 3)) + 'minutes')
+print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 
 ##################################
 ######## End of Main Part ########
@@ -293,7 +299,28 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
 if object_type == "Step phase object" or object_type == "Error function phase object":
     resolution = 0
 
-print("Resolution R = " + str(round(resolution*1e9, 4)) + "nm")
+print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
+
+# Save this list of resolution into a csv file
+if LEEM_type == 'IBM':
+    if aberration_corrected == False:
+        filename = object_type + 'I(x)_IBM_nac.csv' 
+    if aberration_corrected == True:
+        filename = object_type + 'I(x)_IBM_ac.csv'       
+if LEEM_type == 'Energy dependent':
+    if aberration_corrected == False:
+        filename = object_type + 'I(x)_nac_LEEM_E0=' + str(E_0) + '.csv'
+    if aberration_corrected == True:
+        filename = object_type + 'I(x)_ac_LEEM_E0=' + str(E_0) + '.csv'
+
+with open(filename, 'a') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',')
+    writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
+    
+    for i in range(len(x_array)):
+        writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 5)])
+ 
+    csvfile.close()
 
 '''
 ########## Plotting the object ###########
@@ -302,7 +329,7 @@ plt.plot(x_array, object_phase)
 '''
 
 ########## Plotting the curve ############
-plt.plot(x_array, matrixI[:, i])
+plt.plot(x_array, matrixI)
 
 plt.xlim(-10e-9, 10e-9)
 # naming the x axis
