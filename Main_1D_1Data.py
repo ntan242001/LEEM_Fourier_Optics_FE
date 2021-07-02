@@ -200,7 +200,7 @@ matrixI = np.zeros_like(x_array, dtype=complex)
 
 
 # The Fourier Transform of the Object Wave Function
-F_object_function = np.fft.fft(object_function, simulating_steps) * (1 / simulating_steps)
+F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
 # Shifting this to the centre at 0
 F_object_function = np.fft.fftshift(F_object_function)
 # An array of points in the q space, in SI unit
