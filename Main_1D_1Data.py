@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from joblib import Parallel, delayed
 import time
 import csv
 import math
