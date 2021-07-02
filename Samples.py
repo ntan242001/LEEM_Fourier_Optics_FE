@@ -62,23 +62,18 @@ create_object("Error function phase object", k = 1)
 '''
 # Plotting the object
 fig, ax1 = plt.subplots()
-
 ax1.set_xlabel('object position (nm)', color = 'k')
 ax1.set_ylabel('$ \\varphi $', color = 'k')
 ax1.plot(x_array*1e9, object_phase, color = 'k')
 ax1.tick_params(axis='y')
 ax1.text(160, 2.9, 'Phase', fontsize=12)
-
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-
 ax2.set_ylabel('$\sigma$', color='tab:red')  # we already handled the x-label with ax1
 ax2.plot(x_array*1e9, object_amplitude, color= 'tab:red')
 ax2.tick_params(axis='y', labelcolor='tab:red')
 ax2.text(-180, 1.004, 'Amplitude', fontsize=12)
-
 fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.show()
-
 '''
 # Plotting the object
 fig, ax1 = plt.subplots()
@@ -87,18 +82,25 @@ ax1.set_ylabel('$ \\varphi $', color = 'k')
 ax1.tick_params(axis='y')
 ax1.text(160, 2.9, 'Phase', fontsize=12)
 ax2 = ax1.twinx()
-ax2.set_ylabel('$\sigma$', color='tab:purple')  # we already handled the x-label with ax1
-ax2.tick_params(axis='y', labelcolor='tab:purple')
+ax2.set_ylabel('$\sigma$', color='tab:red')  # we already handled the x-label with ax1
+ax2.tick_params(axis='y', labelcolor='tab:red')
 ax2.text(-180, 1.05, 'Amplitude', fontsize=12)
 
 #fig.tight_layout()  # otherwise the right y-label is slightly clipped
     
 for i in [0.1, 0.5, 1, 100]:
     create_object("Error function phase object", k = 1, h =i)   
-    ax1.plot(x_array*1e9, object_phase, label = "scale " + str(i) + "$\\times 10^{8}$")   
+    if i == 0.1:
+        ax1.plot(x_array*1e9, object_phase, label = "scale $1 \\times 10^{7}$", color = 'b')
+    if i == 0.5:
+        ax1.plot(x_array*1e9, object_phase, label = "scale $5 \\times 10^{7}$", color = 'y')
+    if i == 1:
+        ax1.plot(x_array*1e9, object_phase, label = "scale $1 \\times 10^{8}$", color = 'g')   
+    if i == 100:
+        ax1.plot(x_array*1e9, object_phase, label = "perfect step", color = 'k')
     
 ax1.legend()    
-ax2.plot(x_array*1e9, object_amplitude, "--",color= 'tab:purple')    
+ax2.plot(x_array*1e9, object_amplitude, "--",color= 'tab:red')    
 ax2.set_ylim(0,3)
 
 plt.show()
