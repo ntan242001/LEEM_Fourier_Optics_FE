@@ -99,7 +99,6 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
             alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
         
-        lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0) # in metre
         
         q_ap = alpha_ap/lamda
         q_ill = alpha_ill/lamda
@@ -188,17 +187,17 @@ print("Simulation start.")
 object_function_reversed = object_function[::-1] 
 
 # Creating a series of E_0
-E_0_series = np.linspace(10, 100, 20)
+E_0_series = np.append(np.linspace(1, 9, 9), np.linspace(10, 100, 10))
 
 # Initialising the series of function I(x) at different values of E_0
 matrixI = np.zeros((len(x_array), len(E_0_series)), dtype=complex)
 
 def FO1D(E_0, E_0_index):
-    choose_LEEM_type("Energy dependent", aberration_corrected = False)
+    choose_LEEM_type("Energy dependent", aberration_corrected = True)
     choose_defocus("In-focus")
     
     # The Fourier Transform of the Object Wave Function
-    F_object_function = np.fft.fft(object_function, simulating_steps) * (1 / simulating_steps)
+    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
     # Shifting this to the centre at 0
     F_object_function = np.fft.fftshift(F_object_function)
     # An array of points in the q space, in SI unit
@@ -305,12 +304,12 @@ for i in range(len(E_0_series)):
 plt.plot(E_0_series, resolution_list)
 
 # Save this list of resolution into a csv file
-with open('resolution_E0_IBMnac.csv', 'a') as csvfile:
+with open('resolution_E0_IBMac.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['E_0 (eV)', 'resolution (nm)'])
     
     for i in range(len(E_0_series)):
-        writer.writerow([round(E_0_series[i], 5), round(1e9 * resolution_list[i], 5)])
+        writer.writerow([round(E_0_series[i], 3), round(1e9 * resolution_list[i], 10)])
  
     csvfile.close()
 
@@ -318,22 +317,22 @@ with open('resolution_E0_IBMnac.csv', 'a') as csvfile:
 # Plotting the object
 plt.plot(x_array, object_amplitude)
 plt.plot(x_array, object_phase)
-
+'''
 # plotting the curves
-for i in range(len(alpha_ap_series)):
+for i in range(len(E_0_series)):
     plt.plot(x_array, matrixI[:, i])
     
-    plt.xlim(-10e-9, 10e-9)
-    # naming the x axis
-    plt.xlabel('Position x (m)')
-    # naming the y axis
-    plt.ylabel('Instensity')
-      
-    # giving a title to my graph
-    plt.title('I(x)')
-    
-    plt.show()
-'''
+plt.xlim(-20e-9, 20e-9)
+# naming the x axis
+plt.xlabel('Position x (m)')
+# naming the y axis
+plt.ylabel('Instensity')
+  
+# giving a title to my graph
+plt.title('I(x)')
+
+plt.show()
+
 ################################
 ###### End of Programme ########
 ################################
