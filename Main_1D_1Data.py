@@ -266,21 +266,24 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ######## Calculating the resolution for the phase object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
+    # Starting from the centre and find the local minimum to the right of the central point
     I_min = matrixI[half_steps]
     for j in range(half_steps):
         if matrixI[half_steps+j] <= I_min:
             I_min = matrixI[half_steps+j]
-            idx_min = half_steps+j
         else:
+            idx_min = half_steps+j
             break
         
+    # Starting from the centre and find the local maximum to the left of the central point
     I_max = matrixI[half_steps]
     for j in range(half_steps):
         if matrixI[half_steps-j] >= I_max:
-            I_max = matrixI[half_steps-j]
-            idx_max = half_steps-j
+            I_max = matrixI[half_steps-j]            
         else:
+            idx_max = half_steps-j
             break
+        
     
     # The region of interest to find the resolution
     x_array_focus = x_array[idx_max:idx_min]
@@ -296,25 +299,42 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
     resolution = x_16 - x_84
 
 if object_type == "Step phase object" or object_type == "Error function phase object":
-    I_min = np.amin(matrixI)
-    idx_min = np.argmin(matrixI)
+    # Finding the local minimum around the central point
     half_steps = int(simulating_steps/2)
+    I_min = matrixI[half_steps]
+    for j in range(half_steps):
+        if matrixI[half_steps+j] <= I_min:
+            I_min = matrixI[half_steps+j]
+        else:
+            idx_min = half_steps+j
+            break
+    
+    for j in range(half_steps):
+        if matrixI[half_steps-j] <= I_min:
+            I_min = matrixI[half_steps-j]
+        else:
+            idx_min = half_steps-j
+            break
+        
+    # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
     for j in range(half_steps):
         if matrixI[idx_min+j] >= I_right:
             I_right = matrixI[idx_min+j]
-            idx_right = idx_min+j
         else:
+            idx_right = idx_min+j
             break
         
+    # Finding the local maximum to the left of this minimum
     I_left = matrixI[idx_min]
     for j in range(half_steps):
         if matrixI[idx_min-j] >= I_left:
-            I_left = matrixI[idx_min-j]
-            idx_left = idx_min-j
+            I_left = matrixI[idx_min-j]            
         else:
+            idx_left = idx_min-j
             break
-    
+        
+    # The dip is counted from the lower value between I_left and I_right
     if I_left > I_right:
         idx_left = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_right))
         I_left = matrixI[idx_left]
