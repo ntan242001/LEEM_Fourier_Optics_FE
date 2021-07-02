@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import csv
 
 x_array = []
-matrixI_nac = []
-matrixI_ac = []
+matrixI_step = []
+matrixI_108 = []
+matrixI_5107 = []
+matrixI_107 = []
 
-with open('Step phase objectI(x)_IBM_nac.csv', 'r') as csvfile:
+with open('Step phase object IBM_nac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -16,10 +18,10 @@ with open('Step phase objectI(x)_IBM_nac.csv', 'r') as csvfile:
                 continue
             else:
                 x_array.append(float(row[0]))
-                matrixI_nac.append(float(row[1]))    
+                matrixI_step.append(float(row[1]))    
     csvfile.close()
-    
-with open('Step phase objectI(x)_IBM_ac.csv', 'r') as csvfile:
+
+with open('10^8 Error function phase object IBM_nac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -29,14 +31,41 @@ with open('Step phase objectI(x)_IBM_ac.csv', 'r') as csvfile:
             if row == []:
                 continue
             else:
-                matrixI_ac.append(float(row[1]))    
+                matrixI_108.append(float(row[1]))    
+    csvfile.close()
+    
+with open('5*10^7 Error function phase object IBM_nac.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                matrixI_5107.append(float(row[1]))    
     csvfile.close()    
 
+with open('10^7 Error function phase object IBM_nac.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                matrixI_107.append(float(row[1]))    
+    csvfile.close() 
     
 ########## Plotting the curve ############
 #plt.subplot(111)
-plt.plot(x_array, matrixI_nac, label = "nac")
-plt.plot(x_array, matrixI_ac, label = "ac")
+plt.plot(x_array, matrixI_step, label = "perfect step")
+plt.plot(x_array, matrixI_108, label = "scale $10^8$")
+plt.plot(x_array, matrixI_108, label = "scale $5 \\times 10^7$")
+plt.plot(x_array, matrixI_108, label = "scale $10^7$")
 
 plt.xlim(-10, 10)
 # naming the x axis
@@ -45,6 +74,7 @@ plt.xlabel('Position x (nm)')
 plt.ylabel('Instensity')
 # giving a title to my graph
 plt.title('$\pi$ step phase object')
-plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', borderaxespad=0.)
+plt.legend()
 
 plt.show()
+
