@@ -108,7 +108,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
         q_ap = alpha_ap/lamda
         q_ill = alpha_ill/lamda
 
-choose_LEEM_type("IBM", aberration_corrected_bool = True)
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
 
 # A function to set different defocus values
 def choose_defocus(defocus_type):
@@ -261,7 +261,7 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ##################################
 ######## Analysing Results #######
 ##################################
-
+'''
 ######## Calculating the resolution for the phase object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
@@ -303,25 +303,25 @@ print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
 # Save this list of resolution into a csv file
 if LEEM_type == 'IBM':
     if aberration_corrected == False:
-        filename = object_type + 'I(x)_IBM_nac.csv' 
+        filename = object_type + ' IBM_nac.csv' 
     if aberration_corrected == True:
-        filename = object_type + 'I(x)_IBM_ac.csv'       
+        filename = object_type + ' IBM_ac.csv'       
 if LEEM_type == 'Energy dependent':
     if aberration_corrected == False:
-        filename = object_type + 'I(x)_nac_LEEM_E0=' + str(E_0) + '.csv'
+        filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
     if aberration_corrected == True:
-        filename = object_type + 'I(x)_ac_LEEM_E0=' + str(E_0) + '.csv'
+        filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
 
-with open(filename, 'a') as csvfile:
+with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
     
     for i in range(len(x_array)):
-        writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 5)])
+        writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 10)])
  
     csvfile.close()
 
-'''
+
 ########## Plotting the object ###########
 plt.plot(x_array, object_amplitude)
 plt.plot(x_array, object_phase)
