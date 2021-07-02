@@ -176,9 +176,10 @@ def create_object(object_type_str, k = 1):
         
         for counter, element in enumerate(x_array):
             object_phase[counter] = (math.erf(element*1e8)+1)/2*k*np.pi
-        
+
     # Object function
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
+    print(object_type + " created")
 
 create_object("Step phase object", k = 1)
 
@@ -261,7 +262,7 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ##################################
 ######## Analysing Results #######
 ##################################
-'''
+
 ######## Calculating the resolution for the phase object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
@@ -288,18 +289,54 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
     I_84 = I_min + (I_max - I_min)*84/100
     I_16 = I_min + (I_max - I_min)*16/100
     
-    I_84_index = np.where(np.abs(matrixI_focus - I_84) == min(np.abs(matrixI_focus - I_84)))
-    x_84 = x_array_focus[I_84_index[0]]
-    I_16_index = np.where(np.abs(matrixI_focus - I_16) == min(np.abs(matrixI_focus - I_16)))
-    x_16 = x_array_focus[I_16_index[0]]
+    I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
+    x_84 = x_array_focus[I_84_index]
+    I_16_index = np.argmin(np.abs(matrixI_focus - I_16))
+    x_16 = x_array_focus[I_16_index]
     resolution = x_16 - x_84
-    resolution = resolution[0]
 
 if object_type == "Step phase object" or object_type == "Error function phase object":
-    resolution = 0
+    I_min = np.amin(matrixI)
+    idx_min = np.argmin(matrixI)
+    half_steps = int(simulating_steps/2)
+    I_right = matrixI[idx_min]
+    for j in range(half_steps):
+        if matrixI[idx_min+j] >= I_right:
+            I_right = matrixI[idx_min+j]
+            idx_right = idx_min+j
+        else:
+            break
+        
+    I_left = matrixI[idx_min]
+    for j in range(half_steps):
+        if matrixI[idx_min-j] >= I_left:
+            I_left = matrixI[idx_min-j]
+            idx_left = idx_min-j
+        else:
+            break
+    
+    if I_left > I_right:
+        idx_left = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_right))
+        I_left = matrixI[idx_left]
+    elif I_left < I_right:
+        idx_right = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_left))
+        I_right = matrixI[idx_right]    
+        
+    
+    
+    I_50left = I_min + (I_left - I_min)/2
+    I_50right = I_min + (I_right - I_min)/2
+    
+    I_50left_index = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_50left))
+    x_50left = x_array[I_50left_index]
+    I_50right_index = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_50right))
+    x_50right = x_array[I_50right_index]
+    resolution = x_50right - x_50left
+    
 
 print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
 
+'''
 # Save this list of resolution into a csv file
 if LEEM_type == 'IBM':
     if aberration_corrected == False:
