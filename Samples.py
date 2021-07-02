@@ -78,7 +78,7 @@ plt.show()
 # Plotting the object
 fig, ax1 = plt.subplots()
 ax1.set_xlabel('object position (nm)', color = 'k')
-ax1.set_ylabel('$ \\varphi $', color = 'k')
+ax1.set_ylabel('$ \\varphi $ (rad)', color = 'k')
 ax1.tick_params(axis='y')
 ax1.text(160, 2.9, 'Phase', fontsize=12)
 ax2 = ax1.twinx()
@@ -93,7 +93,7 @@ for i in [0.1, 0.5, 1, 100]:
     if i == 0.1:
         ax1.plot(x_array*1e9, object_phase, label = "scale $1 \\times 10^{7}$", color = 'b')
     if i == 0.5:
-        ax1.plot(x_array*1e9, object_phase, label = "scale $5 \\times 10^{7}$", color = 'y')
+        ax1.plot(x_array*1e9, object_phase, label = "scale $5 \\times 10^{7}$", color = 'orange')
     if i == 1:
         ax1.plot(x_array*1e9, object_phase, label = "scale $1 \\times 10^{8}$", color = 'g')   
     if i == 100:
