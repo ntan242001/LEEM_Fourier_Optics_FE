@@ -8,7 +8,6 @@ import math
 ######### Preamble ###########
 ##############################
 
-t_0 = time.time()
 
 # A function to choose different LEEM parameters
 def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
@@ -111,7 +110,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
 choose_LEEM_type("IBM", aberration_corrected_bool = False)
 
 # A function to set different defocus values
-def choose_defocus(defocus_type):
+def choose_defocus(defocus_type, value = 0):
     global delta_z
     if defocus_type == "In-focus":
         delta_z = 0
@@ -122,6 +121,8 @@ def choose_defocus(defocus_type):
     elif defocus_type == "A-Phi Scherzer defocus":
         delta_z = np.sqrt(9/64*C_5*lamda**2)
         print("A-Phi Scherzer defocus chosen.")
+    elif defocus_type == "custom":
+        delta_z = value
 
 choose_defocus("In-focus")
 
@@ -192,6 +193,7 @@ create_object("Step phase object", k = 1)
 ##################################
 ########### Main Part ############
 ##################################
+t_0 = time.time()
 print("Simulation start.")
 # The object image is reversed through the lens
 object_function_reversed = object_function[::-1] 
