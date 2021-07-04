@@ -9,13 +9,16 @@ This project contains programmes that simulate and analyse images formed by Low 
 
 
 ## Installation
-The programmes are written in Python 3 with common libraries such as numpy, matplotlib. Users are recommended to install Anaconda and edit the programmes with Spyder.
+The programmes are written in Python 3 with common libraries such as numpy, matplotlib. Users are recommended to install Anaconda and edit the programmes with Jupyter Notebook or Spyder.
 
-## 
-
+## LEEM Fourier Optics of One Dimensional Objects
+# Intensity profile
 ```python
 
 ```
+# Resolution as a function of aperture angle
+
+# Resolution as a function of initial energy $E_0$
 
 ## Contributing
 
