@@ -11,110 +11,28 @@ import math
 
 t_0 = time.time()
 
-# A function to choose different LEEM parameters
-def choose_LEEM_type(LEEM_type_str, aberration_corrected = False):
-    global E, E_0, C_c, C_cc, C_3c, C_3, C_5, alpha_ap, alpha_ill, \
-        delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, E_0_series
-    LEEM_type = LEEM_type_str
-    
-    if LEEM_type == "IBM":
-        if aberration_corrected == False:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 10  # eV  Energy at the sample
-            
-            C_c = -0.075  # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 23.09 # m   Third Rank Chromatic Aberration Coefficient
-            C_3c = -59.37  # m   Forth Rank Chromatic Aberration Coefficient
-            
-            C_3 = 0.345  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
-            
-            alpha_ap = 2.34e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
-            
-            delta_E = 0.25  # eV  Energy Spread
-            M_L = 0.653  # Lateral Magnification
-            print("IBM NAC chosen.")
-            
-        elif aberration_corrected == True:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 10  # eV  Energy at the sample
-            
-            C_c = 0  # m   Second Rank Chromatic Aberration Coefficient
-            C_cc = 27.9 # m   Third Rank Chromatic Aberration Coefficient
-            C_3c = -67.4 # m   Forth Rank Chromatic Aberration Coefficient
-            
-            C_3 = 0  # m   Spherical Aberration Coefficient
-            C_5 = 92.8
-        
-            alpha_ap = 7.37e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
-        
-            delta_E = 0.25  # eV  Energy Spread
-            M_L = 0.653  # Lateral Magnification
-            print("IBM AC chosen.")
-            
-        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E)
-        lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0)
-    
-        q_ap = alpha_ap/lamda
-        q_ill = alpha_ill/lamda
-        
-    elif LEEM_type == "Energy dependent":
-        if aberration_corrected == False:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
-            kappa = np.sqrt(E/E_0)
-            
-            C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 0.5918 * kappa**(3/2) - 87.063 # m   Third Rank Chromatic Aberration Coefficient
-            C_3c = -1.2141 * kappa**(3/2) + 169.41  # m   Forth Rank Chromatic Aberration Coefficient
-            
-            C_3 = 0.0297 * kappa**(1/2) + 0.1626  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
-            
-            delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
-            M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
-            alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
-            
-        if aberration_corrected == True:
-            E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample
-            kappa = np.sqrt(E/E_0)
-            
-            C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
-            C_cc = 0.5984 * kappa**(3/2) - 84.002 # m   Third Rank Chromatic Aberration Coefficient 
-            C_3c = -1.1652 * kappa**(3/2) + 153.58  # m   Forth Rank Chromatic Aberration Coefficient  
-            
-            C_3 = 0  # m  Third Order Spherical Aberration Coefficient
-            C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
-            
-            delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
-            M_L = 0.653  # Lateral Magnification
-            
-            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
-            alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
-        
-        
-        q_ap = alpha_ap/lamda
-        q_ill = alpha_ill/lamda
+# Creating a series of E_0
+E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
+E_0_series = np.append(E_0_series, np.linspace(10, 100, 40))
 
-
+aberration_corrected = False
 
 # A function to set different defocus values
-def choose_defocus(defocus_type):
+def choose_defocus(defocus_type, value = 0):
     global delta_z
     if defocus_type == "In-focus":
         delta_z = 0
+        print("In-focus chosen.")
     elif defocus_type == "Scherzer defocus":
         delta_z = np.sqrt(3/2*C_3*lamda)
+        print("Scherzer defocus chosen.")
     elif defocus_type == "A-Phi Scherzer defocus":
         delta_z = np.sqrt(9/64*C_5*lamda**2)
+        print("A-Phi Scherzer defocus chosen.")
+    elif defocus_type == "custom":
+        delta_z = value
 
+choose_defocus("In-focus")
 
 
 object_size = 400               # simulating object size in nm
@@ -167,11 +85,12 @@ def create_object(object_type_str, k = 1):
         
         for counter, element in enumerate(x_array):
             object_phase[counter] = (math.erf(element*1e8)+1)/2*k*np.pi
-        
+
     # Object function
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
+    print(object_type + " created")
 
-create_object("Step amplitude object")
+create_object("Step amplitude object", k = 1)
 
 ##################################
 ######## End of Preamble #########
@@ -184,16 +103,52 @@ create_object("Step amplitude object")
 ##################################
 print("Simulation start.")
 # The object image is reversed through the lens
-object_function_reversed = object_function[::-1] 
-
-# Creating a series of E_0
-E_0_series = np.append(np.linspace(1, 9, 9), np.linspace(10, 100, 10))
+object_function_reversed = object_function[::-1]
 
 # Initialising the series of function I(x) at different values of E_0
 matrixI = np.zeros((len(x_array), len(E_0_series)), dtype=complex)
 
 def FO1D(E_0, E_0_index):
-    choose_LEEM_type("Energy dependent", aberration_corrected = True)
+    if aberration_corrected == False:
+        E = 15010  # eV  Nominal Energy After Acceleration
+        kappa = np.sqrt(E/E_0)
+        
+        C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
+        C_cc = 0.5918 * kappa**(3/2) - 87.063 # m   Third Rank Chromatic Aberration Coefficient
+        C_3c = -1.2141 * kappa**(3/2) + 169.41  # m   Forth Rank Chromatic Aberration Coefficient
+        
+        C_3 = 0.0297 * kappa**(1/2) + 0.1626  # m  Third Order Spherical Aberration Coefficient
+        C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
+        
+        delta_E = 0.25  # eV  Energy Spread
+        alpha_ill = 0.1e-3  # rad Illumination divergence angle
+        M_L = 0.653  # Lateral Magnification
+        
+        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+        alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
+            
+    if aberration_corrected == True:
+        E = 15010  # eV  Nominal Energy After Acceleration
+        kappa = np.sqrt(E/E_0)
+        
+        C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
+        C_cc = 0.5984 * kappa**(3/2) - 84.002 # m   Third Rank Chromatic Aberration Coefficient 
+        C_3c = -1.1652 * kappa**(3/2) + 153.58  # m   Forth Rank Chromatic Aberration Coefficient  
+        
+        C_3 = 0  # m  Third Order Spherical Aberration Coefficient
+        C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
+        
+        delta_E = 0.25  # eV  Energy Spread
+        alpha_ill = 0.1e-3  # rad Illumination divergence angle
+        M_L = 0.653  # Lateral Magnification
+        
+        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+        alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
+    
+    
+    q_ap = alpha_ap/lamda
+    q_ill = alpha_ill/lamda
+    
     choose_defocus("In-focus")
     
     # The Fourier Transform of the Object Wave Function
@@ -270,41 +225,111 @@ print('Total time: ' + str(round((t_1-t_0)/60, 3)) + ' minutes')
 resolution_list = []
 for i in range(len(E_0_series)):
     matrixI_i = matrixI[:, i]
-    half_steps = int(simulating_steps/2)
-    I_min = matrixI_i[half_steps]
-    for j in range(half_steps):
-        if matrixI_i[half_steps+j] <= I_min:
-            I_min = matrixI_i[half_steps+j]
-            idx_min = half_steps+j
-        else:
-            break
+    
+    if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
+        half_steps = int(simulating_steps/2)
+        # Starting from the centre and find the local minimum to the right of the central point
+        I_min = matrixI_i[half_steps]
+        for j in range(half_steps):
+            if matrixI_i[half_steps+j] <= I_min:
+                I_min = matrixI_i[half_steps+j]
+            else:
+                idx_min = half_steps+j
+                break
+            
+        # Starting from the centre and find the local maximum to the left of the central point
+        I_max = matrixI_i[half_steps]
+        for j in range(half_steps):
+            if matrixI_i[half_steps-j] >= I_max:
+                I_max = matrixI_i[half_steps-j]            
+            else:
+                idx_max = half_steps-j
+                break
+            
         
-    I_max = matrixI_i[half_steps]
-    for j in range(half_steps):
-        if matrixI_i[half_steps-j] >= I_max:
-            I_max = matrixI_i[half_steps-j]
-            idx_max = half_steps-j
-        else:
-            break
+        # The region of interest to find the resolution
+        x_array_focus = x_array[idx_max:idx_min]
+        matrixI_focus = matrixI_i[idx_max:idx_min]
+        
+        I_84 = I_min + (I_max - I_min)*84/100
+        I_16 = I_min + (I_max - I_min)*16/100
+        
+        I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
+        x_84 = x_array_focus[I_84_index]
+        I_16_index = np.argmin(np.abs(matrixI_focus - I_16))
+        x_16 = x_array_focus[I_16_index]
+        resolution_i = x_16 - x_84
     
-    # The region of interest to find the resolution
-    x_array_focus = x_array[idx_max:idx_min]
-    matrixI_i_focus = matrixI_i[idx_max:idx_min]
-    
-    I_84 = I_min + (I_max - I_min)*84/100
-    I_16 = I_min + (I_max - I_min)*16/100
-    
-    I_84_index = np.where(np.abs(matrixI_i_focus - I_84) == min(np.abs(matrixI_i_focus - I_84)))
-    x_84 = x_array_focus[I_84_index[0]]
-    I_16_index = np.where(np.abs(matrixI_i_focus - I_16) == min(np.abs(matrixI_i_focus - I_16)))
-    x_16 = x_array_focus[I_16_index[0]]
-    resolution_i = x_16 - x_84
-    resolution_list.append(resolution_i[0])
+    if object_type == "Step phase object" or object_type == "Error function phase object":
+        # Finding the local minimum around the central point
+        half_steps = int(simulating_steps/2)
+        I_min = matrixI_i[half_steps]
+        for j in range(half_steps):
+            if matrixI_i[half_steps+j] <= I_min:
+                I_min = matrixI_i[half_steps+j]
+            else:
+                idx_min = half_steps+j
+                break
+        
+        for j in range(half_steps):
+            if matrixI_i[half_steps-j] <= I_min:
+                I_min = matrixI_i[half_steps-j]
+            else:
+                idx_min = half_steps-j
+                break
+            
+        # Finding the local maximum to the right of this minimum
+        I_right = matrixI_i[idx_min]
+        for j in range(half_steps):
+            if matrixI_i[idx_min+j] >= I_right:
+                I_right = matrixI_i[idx_min+j]
+            else:
+                idx_right = idx_min+j
+                break
+            
+        # Finding the local maximum to the left of this minimum
+        I_left = matrixI_i[idx_min]
+        for j in range(half_steps):
+            if matrixI_i[idx_min-j] >= I_left:
+                I_left = matrixI_i[idx_min-j]            
+            else:
+                idx_left = idx_min-j
+                break
+            
+        # The dip is counted from the lower value between I_left and I_right
+        if I_left > I_right:
+            idx_left = idx_left + np.argmin(np.abs(matrixI_i[idx_left:idx_min] - I_right))
+            I_left = matrixI_i[idx_left]
+        elif I_left < I_right:
+            idx_right = idx_min + np.argmin(np.abs(matrixI_i[idx_min:idx_right] - I_left))
+            I_right = matrixI_i[idx_right]    
+            
+        
+        
+        I_50left = I_min + (I_left - I_min)/2
+        I_50right = I_min + (I_right - I_min)/2
+        
+        I_50left_index = idx_left + np.argmin(np.abs(matrixI_i[idx_left:idx_min] - I_50left))
+        x_50left = x_array[I_50left_index]
+        I_50right_index = idx_min + np.argmin(np.abs(matrixI_i[idx_min:idx_right] - I_50right))
+        x_50right = x_array[I_50right_index]
+        resolution_i = x_50right - x_50left
+        
+    resolution_list.append(resolution_i)
     
 plt.plot(E_0_series, resolution_list)
+# naming the x axis
+plt.xlabel('Energy E_0')
+# naming the y axis
+plt.ylabel('Resolution (nm)')
+  
+# giving a title to my graph
+plt.title('R(E_0)')
+
+plt.show()
 
 # Save this list of resolution into a csv file
-with open('resolution_E0_IBMac.csv', 'w') as csvfile:
+with open('resolution_E0_IBMac.csv', 'a') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['E_0 (eV)', 'resolution (nm)'])
     
@@ -317,22 +342,22 @@ with open('resolution_E0_IBMac.csv', 'w') as csvfile:
 # Plotting the object
 plt.plot(x_array, object_amplitude)
 plt.plot(x_array, object_phase)
-'''
+
 # plotting the curves
 for i in range(len(E_0_series)):
     plt.plot(x_array, matrixI[:, i])
     
-plt.xlim(-20e-9, 20e-9)
-# naming the x axis
-plt.xlabel('Position x (m)')
-# naming the y axis
-plt.ylabel('Instensity')
-  
-# giving a title to my graph
-plt.title('I(x)')
-
-plt.show()
-
+    plt.xlim(-20e-9, 20e-9)
+    # naming the x axis
+    plt.xlabel('Position x (m)')
+    # naming the y axis
+    plt.ylabel('Instensity')
+      
+    # giving a title to my graph
+    plt.title('I(x)')
+    
+    plt.show()
+'''
 ################################
 ###### End of Programme ########
 ################################
