@@ -361,6 +361,55 @@ for i in range(len(E_0_series)):
     plt.title('I(x)')
     
     plt.show()
+
+# The programme to plot
+import matplotlib.pyplot as plt
+import csv
+
+E_array_ac = []
+E_array_nac = []
+R_ac = []
+R_nac = []
+
+with open('Step amplitude object_R(E_0)_IBM_ac.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                E_array_ac.append(float(row[0]))
+                R_ac.append(float(row[1]))    
+    csvfile.close()
+
+with open('Step amplitude object_R(E_0)_IBMnac.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                E_array_nac.append(float(row[0]))
+                R_nac.append(float(row[1]))   
+    csvfile.close()
+    
+########## Plotting the curves ############
+plt.plot(E_array_ac, R_ac, label = "ac")
+plt.plot(E_array_nac, R_nac, label = "nac")
+
+plt.xlabel("Initial Energy $E_0$ (eV)")
+plt.ylabel("Resolution (nm)")
+plt.title("Resolution versus initial energy")
+
+plt.legend()
+
+plt.show()
 '''
 ################################
 ###### End of Programme ########
