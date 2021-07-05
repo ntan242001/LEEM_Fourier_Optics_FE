@@ -13,9 +13,8 @@ t_0 = time.time()
 
 # Creating a series of E_0
 E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
-E_0_series = np.append(E_0_series, np.linspace(10, 100, 40))
 
-aberration_corrected = False
+aberration_corrected = True
 
 # A function to set different defocus values
 def choose_defocus(defocus_type, value = 0):
@@ -319,7 +318,7 @@ for i in range(len(E_0_series)):
     
 plt.plot(E_0_series, resolution_list)
 # naming the x axis
-plt.xlabel('Energy E_0')
+plt.xlabel('Energy E_0 (eV)')
 # naming the y axis
 plt.ylabel('Resolution (nm)')
   
@@ -329,7 +328,12 @@ plt.title('R(E_0)')
 plt.show()
 
 # Save this list of resolution into a csv file
-with open('resolution_E0_IBMac.csv', 'a') as csvfile:
+if aberration_corrected == False:
+    filename = object_type + '_R(E_0)_IBM_nac.csv' 
+if aberration_corrected == True:
+    filename = object_type + '_R(E_0)_IBM_ac.csv'
+
+with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['E_0 (eV)', 'resolution (nm)'])
     
