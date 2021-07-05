@@ -265,7 +265,7 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ######## Analysing Results #######
 ##################################
 
-######## Calculating the resolution for the phase object ########
+######## Calculating the resolution for the object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
     # Starting from the centre and find the local minimum to the right of the central point
