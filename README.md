@@ -12,12 +12,16 @@ The programmes are written in Python 3 with common libraries such as numpy, matp
 
 ## LEEM Fourier Optics of One Dimensional Objects
 ### Intensity profile
-```python
+The programme "Main_1D_1Data.py" provides a plot of intensity versus position, as well as the microscope's resolution. Users can choose between different LEEM constants, defocus modes and object functions. To learn the programme in more details, users can run the file "Main_1D_1Data.ipynb" in Jupyter Notebook.
 
-```
 ### Resolution as a function of aperture angle
 
+
 ### Resolution as a function of initial energy
+
+
+### Intensity profile with second order Taylor expansion
+The programme "2nd_Order_Taylor.py" takes into account the second order expansion of the small terms $\frac{k}{q}$ and $\frac{\varepsilon}{E}$
 
 ## Contributing
 
