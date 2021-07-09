@@ -277,36 +277,61 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ##################################
 ######## Analysing Results #######
 ##################################
+'''
+########## Plotting the object ###########
+plt.plot(x_array, object_amplitude)
+plt.plot(x_array, object_phase)
+'''
+
+########## Plotting the curve ############
+plt.plot(x_array*1e9, matrixI)
+
+plt.xlim(-10, 10)
+# naming the x axis
+plt.xlabel('Position x (nm)')
+# naming the y axis
+plt.ylabel('Instensity')
+  
+# giving a title to my graph
+plt.title('I(x)')
+
+plt.show()
+
 
 ######## Calculating the resolution for the object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
     # Starting from the centre and find the local minimum to the right of the central point
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
-
+        
     # Starting from the centre and find the local maximum to the left of the central point
     I_max = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps-j] >= I_max:
+    for j in range(1, half_steps):
+        if matrixI[half_steps-j] > I_max:
             I_max = matrixI[half_steps-j]            
         else:
-            idx_max = half_steps-j
+            idx_max = half_steps-j+1
             break
-
-
+        
+    
     # The region of interest to find the resolution
     x_array_focus = x_array[idx_max:idx_min]
     matrixI_focus = matrixI[idx_max:idx_min]
-
-    I_84 = I_min + (I_max - I_min)*84/100
-    I_16 = I_min + (I_max - I_min)*16/100
-
+    
+    I_100_index = np.argmin(np.abs(matrixI_focus - 1))
+    I_100 = matrixI_focus[I_100_index]
+    I_0_index = np.argmin(np.abs(matrixI_focus - 1/2))
+    I_0 = matrixI_focus[I_0_index]
+    
+    I_84 = I_0 + (I_100 - I_0)*84/100
+    I_16 = I_0 + (I_100 - I_0)*16/100
+    
     I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
     x_84 = x_array_focus[I_84_index]
     I_16_index = np.argmin(np.abs(matrixI_focus - I_16))
@@ -317,38 +342,39 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local minimum around the central point
     half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
-
-    for j in range(half_steps):
-        if matrixI[half_steps-j] <= I_min:
-            I_min = matrixI[half_steps-j]
+    
+    current_min_idx = idx_min
+    for j in range(1, half_steps):
+        if matrixI[current_min_idx-j] < I_min:
+            I_min = matrixI[current_min_idx-j]
         else:
-            idx_min = half_steps-j
+            idx_min = current_min_idx-j+1
             break
-
+    
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min+j] >= I_right:
+    for j in range(1, half_steps):
+        if matrixI[idx_min+j] > I_right:
             I_right = matrixI[idx_min+j]
         else:
-            idx_right = idx_min+j
+            idx_right = idx_min+j-1
             break
-
+        
     # Finding the local maximum to the left of this minimum
     I_left = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min-j] >= I_left:
+    for j in range(1, half_steps):
+        if matrixI[idx_min-j] > I_left:
             I_left = matrixI[idx_min-j]            
         else:
-            idx_left = idx_min-j
+            idx_left = idx_min-j+1
             break
-
+        
     # The dip is counted from the lower value between I_left and I_right
     if I_left > I_right:
         idx_left = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_right))
@@ -356,18 +382,22 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     elif I_left < I_right:
         idx_right = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_left))
         I_right = matrixI[idx_right]    
-
-
-
+        
+    # Shifting the left and right points of consideration to those of value 1
+    I_left_index = np.argmin(np.abs(matrixI[idx_left:idx_min] - 1))
+    I_left = matrixI[idx_left]
+    I_right_index = np.argmin(np.abs(matrixI[idx_min:idx_right] - 1))
+    I_right = matrixI[idx_right]
+    
     I_50left = I_min + (I_left - I_min)/2
     I_50right = I_min + (I_right - I_min)/2
-
+    
     I_50left_index = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_50left))
     x_50left = x_array[I_50left_index]
     I_50right_index = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_50right))
     x_50right = x_array[I_50right_index]
     resolution = x_50right - x_50left
-
+    
 
 print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
 
@@ -383,6 +413,7 @@ if LEEM_type == 'Energy dependent':
         filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
     if aberration_corrected == True:
         filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
+
 with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
@@ -391,24 +422,9 @@ with open(filename, 'w') as csvfile:
         writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 10)])
  
     csvfile.close()
-########## Plotting the object ###########
-plt.plot(x_array, object_amplitude)
-plt.plot(x_array, object_phase)
+
 '''
 
-########## Plotting the curve ############
-plt.plot(x_array, matrixI)
-
-plt.xlim(-10e-9, 10e-9)
-# naming the x axis
-plt.xlabel('Position x (m)')
-# naming the y axis
-plt.ylabel('Instensity')
-
-# giving a title to my graph
-plt.title('I(x)')
-
-plt.show()
 
 ################################
 ###### End of Programme ########
