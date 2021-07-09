@@ -278,7 +278,6 @@ for i in range(len(E_0_series)):
             else:
                 idx_min = current_min_idx-j+1
                 break
-        print(idx_min)
         
         # Finding the local maximum to the right of this minimum
         I_right = matrixI_i[idx_min]
