@@ -350,7 +350,6 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
         else:
             idx_min = current_min_idx-j+1
             break
-    print(idx_min)
     
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
