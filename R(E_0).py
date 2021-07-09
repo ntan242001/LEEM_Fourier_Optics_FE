@@ -12,27 +12,10 @@ import math
 t_0 = time.time()
 
 # Creating a series of E_0
-E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
+# E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
+E_0_series = np.array([1,2])
 
-aberration_corrected = True
-
-# A function to set different defocus values
-def choose_defocus(defocus_type, value = 0):
-    global delta_z
-    if defocus_type == "In-focus":
-        delta_z = 0
-        print("In-focus chosen.")
-    elif defocus_type == "Scherzer defocus":
-        delta_z = np.sqrt(3/2*C_3*lamda)
-        print("Scherzer defocus chosen.")
-    elif defocus_type == "A-Phi Scherzer defocus":
-        delta_z = np.sqrt(9/64*C_5*lamda**2)
-        print("A-Phi Scherzer defocus chosen.")
-    elif defocus_type == "custom":
-        delta_z = value
-
-choose_defocus("In-focus")
-
+aberration_corrected = False
 
 object_size = 400               # simulating object size in nm
 simulating_steps = 1 + 2**15    # total simulating steps
@@ -143,12 +126,19 @@ def FO1D(E_0, E_0_index):
         
         lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
         alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
-    
-    
+        
     q_ap = alpha_ap/lamda
     q_ill = alpha_ill/lamda
     
-    choose_defocus("In-focus")
+    # Setting different defocus values
+    # if defocus_type == "In-focus":
+    delta_z = 0
+    # elif defocus_type == "Scherzer defocus":
+    #   delta_z = np.sqrt(3/2*C_3*lamda)
+    # elif defocus_type == "A-Phi Scherzer defocus":
+    #   delta_z = np.sqrt(9/64*C_5*lamda**2)
+    # elif defocus_type == "custom":
+    #   delta_z = value
     
     # The Fourier Transform of the Object Wave Function
     F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
@@ -173,16 +163,23 @@ def FO1D(E_0, E_0_index):
     
     # The modifying function of zeroth-order
     R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-        Q**6 - QQ**6)/6 - 1/2*delta_z*lamda*(Q**2 - QQ**2)))
+        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+    
+    sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
+    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+    
+    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+    
+    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
     
     # The envelop function by source extension
-    E_s = np.exp(-np.pi**2/(4*np.log(2)) * q_ill**2 * (C_3*lamda**3 *(
-        Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ))**2)
+    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
     
-    # The envelop function by energy spread
-    E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q**2 - QQ**2))**(-1/2)
-    E_ct = E_cc * np.exp(-E_cc**2 * np.pi**2/(16*np.log(2)) * (delta_E/E)**2 * (C_c * lamda * (Q**2 - QQ**2) + 1/2*C_3c*lamda**3 * (Q**4 - QQ**4))**2)
-    
+    # The purely chromatic envelop functions
+    E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
+    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
+
     AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
     for i in range(len(q)):
         for j in range(i + 1, len(q)):
@@ -229,20 +226,20 @@ for i in range(len(E_0_series)):
         half_steps = int(simulating_steps/2)
         # Starting from the centre and find the local minimum to the right of the central point
         I_min = matrixI_i[half_steps]
-        for j in range(half_steps):
-            if matrixI_i[half_steps+j] <= I_min:
+        for j in range(1, half_steps):
+            if matrixI_i[half_steps+j] < I_min:
                 I_min = matrixI_i[half_steps+j]
             else:
-                idx_min = half_steps+j
+                idx_min = half_steps+j-1
                 break
             
         # Starting from the centre and find the local maximum to the left of the central point
         I_max = matrixI_i[half_steps]
-        for j in range(half_steps):
-            if matrixI_i[half_steps-j] >= I_max:
+        for j in range(1, half_steps):
+            if matrixI_i[half_steps-j] > I_max:
                 I_max = matrixI_i[half_steps-j]            
             else:
-                idx_max = half_steps-j
+                idx_max = half_steps-j+1
                 break
             
         
@@ -250,8 +247,13 @@ for i in range(len(E_0_series)):
         x_array_focus = x_array[idx_max:idx_min]
         matrixI_focus = matrixI_i[idx_max:idx_min]
         
-        I_84 = I_min + (I_max - I_min)*84/100
-        I_16 = I_min + (I_max - I_min)*16/100
+        I_100_index = np.argmin(np.abs(matrixI_focus - 1))
+        I_100 = matrixI_focus[I_100_index]
+        I_0_index = np.argmin(np.abs(matrixI_focus - 1/2))
+        I_0 = matrixI_focus[I_0_index]
+        
+        I_84 = I_0 + (I_100 - I_0)*84/100
+        I_16 = I_0 + (I_100 - I_0)*16/100
         
         I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
         x_84 = x_array_focus[I_84_index]
@@ -263,36 +265,38 @@ for i in range(len(E_0_series)):
         # Finding the local minimum around the central point
         half_steps = int(simulating_steps/2)
         I_min = matrixI_i[half_steps]
-        for j in range(half_steps):
-            if matrixI_i[half_steps+j] <= I_min:
+        for j in range(9, half_steps):
+            if matrixI_i[half_steps+j] < I_min:
                 I_min = matrixI_i[half_steps+j]
             else:
-                idx_min = half_steps+j
+                idx_min = half_steps+j-1
                 break
         
-        for j in range(half_steps):
-            if matrixI_i[half_steps-j] <= I_min:
-                I_min = matrixI_i[half_steps-j]
+        current_min_idx = idx_min
+        for j in range(1, half_steps):
+            if matrixI_i[current_min_idx-j] < I_min:
+                I_min = matrixI_i[current_min_idx-j]
             else:
-                idx_min = half_steps-j
+                idx_min = current_min_idx-j+1
                 break
-            
+        print(idx_min)
+        
         # Finding the local maximum to the right of this minimum
         I_right = matrixI_i[idx_min]
-        for j in range(half_steps):
-            if matrixI_i[idx_min+j] >= I_right:
+        for j in range(1, half_steps):
+            if matrixI_i[idx_min+j] > I_right:
                 I_right = matrixI_i[idx_min+j]
             else:
-                idx_right = idx_min+j
+                idx_right = idx_min+j-1
                 break
             
         # Finding the local maximum to the left of this minimum
         I_left = matrixI_i[idx_min]
-        for j in range(half_steps):
-            if matrixI_i[idx_min-j] >= I_left:
+        for j in range(1, half_steps):
+            if matrixI_i[idx_min-j] > I_left:
                 I_left = matrixI_i[idx_min-j]            
             else:
-                idx_left = idx_min-j
+                idx_left = idx_min-j+1
                 break
             
         # The dip is counted from the lower value between I_left and I_right
@@ -303,7 +307,11 @@ for i in range(len(E_0_series)):
             idx_right = idx_min + np.argmin(np.abs(matrixI_i[idx_min:idx_right] - I_left))
             I_right = matrixI_i[idx_right]    
             
-        
+        # Shifting the left and right points of consideration to those of value 1
+        I_left_index = np.argmin(np.abs(matrixI_i[idx_left:idx_min] - 1))
+        I_left = matrixI_i[idx_left]
+        I_right_index = np.argmin(np.abs(matrixI_i[idx_min:idx_right] - 1))
+        I_right = matrixI_i[idx_right]
         
         I_50left = I_min + (I_left - I_min)/2
         I_50right = I_min + (I_right - I_min)/2
@@ -313,6 +321,7 @@ for i in range(len(E_0_series)):
         I_50right_index = idx_min + np.argmin(np.abs(matrixI_i[idx_min:idx_right] - I_50right))
         x_50right = x_array[I_50right_index]
         resolution_i = x_50right - x_50left
+        
         
     resolution_list.append(resolution_i)
     
