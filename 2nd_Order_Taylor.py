@@ -224,32 +224,26 @@ if len(q) > a:
 Q, QQ = np.meshgrid(q, q)
 F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
 
-a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
-a_2 = 3/2*C_3*lamda**3 *(Q**2 - QQ**2) + 5/2*C_5*lamda**5 * (Q**4 - QQ**4) 
+# The modifying function of zeroth-order
+R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
+    Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
 
 sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
 sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
 
+a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+
 b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
 b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
-b_3 = C_c*lamda*(Q - QQ)/E + C_3c*lamda**3*(Q**3 - QQ**3)/E
 
-# The modifying function of zeroth-order
-R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-    Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+# The envelop function by source extension
+E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
 
 # The purely chromatic envelop functions
 E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
 E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
 
-d_1 = a_1 + 1j*2*b_1*b_3*sigma_E**2*E_cc**2
-d_2 = a_2 + 1j*b_3**2*sigma_E**2*E_cc**2
-
-# The mixed envelop function 
-E_m = (1 - 1j*4*np.pi*d_2*sigma_ill**2)**(-1/2)
-E_mt = E_m * np.exp(-2*np.pi**2 *E_m**2 *sigma_ill**2 *d_1**2)
-
-AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_mt), E_ct)
+AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
 for i in range(len(q)):
     for j in range(i + 1, len(q)):
         matrixI[:] = matrixI[:] + 2 * (
@@ -383,6 +377,7 @@ if LEEM_type == 'Energy dependent':
         filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
     if aberration_corrected == True:
         filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
+
 with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
@@ -391,6 +386,8 @@ with open(filename, 'w') as csvfile:
         writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 10)])
  
     csvfile.close()
+
+
 ########## Plotting the object ###########
 plt.plot(x_array, object_amplitude)
 plt.plot(x_array, object_phase)
@@ -413,4 +410,3 @@ plt.show()
 ################################
 ###### End of Programme ########
 ################################
-
