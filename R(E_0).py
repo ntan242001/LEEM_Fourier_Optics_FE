@@ -264,7 +264,7 @@ for i in range(len(E_0_series)):
         # Finding the local minimum around the central point
         half_steps = int(simulating_steps/2)
         I_min = matrixI_i[half_steps]
-        for j in range(9, half_steps):
+        for j in range(1, half_steps):
             if matrixI_i[half_steps+j] < I_min:
                 I_min = matrixI_i[half_steps+j]
             else:
