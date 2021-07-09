@@ -228,13 +228,20 @@ F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
 R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
     Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
 
-# The envelop function by source extension
-E_s = np.exp(-np.pi**2/(4*np.log(2)) * q_ill**2 * (C_3*lamda**3 *(
-    Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ))**2)
+sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
+sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
 
-# The envelop function by energy spread
-E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q**2 - QQ**2))**(-1/2)
-E_ct = E_cc * np.exp(-E_cc**2 * np.pi**2/(16*np.log(2)) * (delta_E/E)**2 * (C_c * lamda * (Q**2 - QQ**2) + 1/2*C_3c*lamda**3 * (Q**4 - QQ**4))**2)
+a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+
+b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
+
+# The envelop function by source extension
+E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
+
+# The purely chromatic envelop functions
+E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
+E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
 
 AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
 for i in range(len(q)):
@@ -270,20 +277,20 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
     half_steps = int(simulating_steps/2)
     # Starting from the centre and find the local minimum to the right of the central point
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
         
     # Starting from the centre and find the local maximum to the left of the central point
     I_max = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps-j] >= I_max:
+    for j in range(1, half_steps):
+        if matrixI[half_steps-j] > I_max:
             I_max = matrixI[half_steps-j]            
         else:
-            idx_max = half_steps-j
+            idx_max = half_steps-j+1
             break
         
     
@@ -291,8 +298,13 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
     x_array_focus = x_array[idx_max:idx_min]
     matrixI_focus = matrixI[idx_max:idx_min]
     
-    I_84 = I_min + (I_max - I_min)*84/100
-    I_16 = I_min + (I_max - I_min)*16/100
+    I_100_index = np.argmin(np.abs(matrixI_focus - 1))
+    I_100 = matrixI_focus[I_100_index]
+    I_0_index = np.argmin(np.abs(matrixI_focus - 1/2))
+    I_0 = matrixI_focus[I_0_index]
+    
+    I_84 = I_0 + (I_100 - I_0)*84/100
+    I_16 = I_0 + (I_100 - I_0)*16/100
     
     I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
     x_84 = x_array_focus[I_84_index]
@@ -304,36 +316,36 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local minimum around the central point
     half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
     
-    for j in range(half_steps):
-        if matrixI[half_steps-j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps-j] < I_min:
             I_min = matrixI[half_steps-j]
         else:
-            idx_min = half_steps-j
+            idx_min = half_steps-j+1
             break
         
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min+j] >= I_right:
+    for j in range(1, half_steps):
+        if matrixI[idx_min+j] > I_right:
             I_right = matrixI[idx_min+j]
         else:
-            idx_right = idx_min+j
+            idx_right = idx_min+j-1
             break
         
     # Finding the local maximum to the left of this minimum
     I_left = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min-j] >= I_left:
+    for j in range(1, half_steps):
+        if matrixI[idx_min-j] > I_left:
             I_left = matrixI[idx_min-j]            
         else:
-            idx_left = idx_min-j
+            idx_left = idx_min-j+1
             break
         
     # The dip is counted from the lower value between I_left and I_right
@@ -344,7 +356,11 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
         idx_right = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_left))
         I_right = matrixI[idx_right]    
         
-    
+    # Shifting the left and right points of consideration to those of value 1
+    I_left_index = np.argmin(np.abs(matrixI[idx_left:idx_min] - 1))
+    I_left = matrixI[idx_left]
+    I_right_index = np.argmin(np.abs(matrixI[idx_min:idx_right] - 1))
+    I_right = matrixI[idx_right]
     
     I_50left = I_min + (I_left - I_min)/2
     I_50right = I_min + (I_right - I_min)/2
@@ -387,11 +403,11 @@ plt.plot(x_array, object_phase)
 '''
 
 ########## Plotting the curve ############
-plt.plot(x_array, matrixI)
+plt.plot(x_array*1e9, matrixI)
 
-plt.xlim(-10e-9, 10e-9)
+plt.xlim(-10, 10)
 # naming the x axis
-plt.xlabel('Position x (m)')
+plt.xlabel('Position x (nm)')
 # naming the y axis
 plt.ylabel('Instensity')
   
