@@ -182,7 +182,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-create_object("Step phase object", k = 1)
+create_object("Step phase object", k = 1/2)
 
 ##################################
 ######## End of Preamble #########
@@ -271,6 +271,26 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ##################################
 ######## Analysing Results #######
 ##################################
+'''
+########## Plotting the object ###########
+plt.plot(x_array, object_amplitude)
+plt.plot(x_array, object_phase)
+'''
+
+########## Plotting the curve ############
+plt.plot(x_array*1e9, matrixI)
+
+plt.xlim(-10, 10)
+# naming the x axis
+plt.xlabel('Position x (nm)')
+# naming the y axis
+plt.ylabel('Instensity')
+  
+# giving a title to my graph
+plt.title('I(x)')
+
+plt.show()
+
 
 ######## Calculating the resolution for the object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
@@ -396,25 +416,8 @@ with open(filename, 'w') as csvfile:
  
     csvfile.close()
 
-
-########## Plotting the object ###########
-plt.plot(x_array, object_amplitude)
-plt.plot(x_array, object_phase)
 '''
 
-########## Plotting the curve ############
-plt.plot(x_array*1e9, matrixI)
-
-plt.xlim(-10, 10)
-# naming the x axis
-plt.xlabel('Position x (nm)')
-# naming the y axis
-plt.ylabel('Instensity')
-  
-# giving a title to my graph
-plt.title('I(x)')
-
-plt.show()
 
 ################################
 ###### End of Programme ########
