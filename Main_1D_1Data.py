@@ -182,7 +182,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-create_object("Step phase object", k = 1/2)
+create_object("Step phase object", k = 1/4)
 
 ##################################
 ######## End of Preamble #########
@@ -336,20 +336,22 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local minimum around the central point
     half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
-    for j in range(1, half_steps):
+    for j in range(9, half_steps):
         if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
             idx_min = half_steps+j-1
             break
     
+    current_min_idx = idx_min
     for j in range(1, half_steps):
-        if matrixI[half_steps-j] < I_min:
-            I_min = matrixI[half_steps-j]
+        if matrixI[current_min_idx-j] < I_min:
+            I_min = matrixI[current_min_idx-j]
         else:
-            idx_min = half_steps-j+1
+            idx_min = current_min_idx-j+1
             break
-        
+    print(idx_min)
+    
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
     for j in range(1, half_steps):
