@@ -12,8 +12,7 @@ import math
 t_0 = time.time()
 
 # Creating a series of E_0
-# E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
-E_0_series = np.array([1,2])
+E_0_series = np.append(np.linspace(0.1, 1, 10), np.linspace(1, 10, 10))
 
 aberration_corrected = False
 
