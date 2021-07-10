@@ -22,7 +22,10 @@ The programme "Aperture_Optimal_Resolution.py" helps calculate the microscopy's 
 The programme "R(E_0).py" helps calculate the microscopy's resolution as a function of initial energy E_0. After running this programme (which takes a relatively long time (an hour for 30 data in range (10 eV, 100 eV)) for Dell Core i5 Pro Desktop), users will attain a csv file containing the calculated array R(E_0).
 
 ### Intensity profile with second order Taylor expansion
-The programme "2nd_Order_Taylor.py" takes into account the second order expansion of the small terms k/q (in source extension) and deviation from the nominal energy (in electron energy distribution).
+The programme "2nd_Order_Taylor.py" (currently in the branch 2nd-Order) takes into account the second order expansion of the small terms k/q (in source extension) and deviation from the nominal energy (in electron energy distribution).
+
+### Intensity profile with electron distribution as a double Gaussian fit
+The programme "Double Gaussian.py" (currently in the branch Double-Gaussian) considers electron energy distribution to be a combination of two Gaussian functions.
 
 ## Contributing
 For contribution request, please email the author at xtnguyenaa@connect.ust.hk.
