@@ -1,5 +1,3 @@
-# Double Gaussian Energy Distribution
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -8,18 +6,125 @@ import math
 
 ##############################
 ######### Preamble ###########
-##############################  
+##############################
 
-# Gaussian sources' parameters
-E_1 = 15010 # eV
-delta_E_1 = 0.25  # eV
-E_2 = 15010 # eV
-delta_E_2 = 0.25  # eV
 
-# Weights
-a_1 = 0.5
-a_2 = 0.5
+# A function to choose different LEEM parameters
+def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
+    global E, E_0, C_c, C_cc, C_3c, C_3, C_5, alpha_ap, alpha_ill, \
+        delta_E, M_L, lamda, lamda_0, q_ill, q_ap, LEEM_type, aberration_corrected
+    LEEM_type = LEEM_type_str
+    aberration_corrected = aberration_corrected_bool
+    
+    if LEEM_type == "IBM":
+        if aberration_corrected == False:
+            E = 15010  # eV  Nominal Energy After Acceleration
+            E_0 = 10  # eV  Energy at the sample
+            
+            C_c = -0.075  # m  Second Rank Chromatic Aberration Coefficient
+            C_cc = 23.09 # m   Third Rank Chromatic Aberration Coefficient
+            C_3c = -59.37  # m   Forth Rank Chromatic Aberration Coefficient
+            
+            C_3 = 0.345  # m  Third Order Spherical Aberration Coefficient
+            C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
+            
+            alpha_ap = 2.34e-3  # rad Aperture angle
+            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            
+            delta_E = 0.25  # eV  Energy Spread
+            M_L = 0.653  # Lateral Magnification
+            print("IBM nac chosen.")
+            
+        elif aberration_corrected == True:
+            E = 15010  # eV  Nominal Energy After Acceleration
+            E_0 = 10  # eV  Energy at the sample
+            
+            C_c = 0  # m   Second Rank Chromatic Aberration Coefficient
+            C_cc = 27.9 # m   Third Rank Chromatic Aberration Coefficient
+            C_3c = -67.4 # m   Forth Rank Chromatic Aberration Coefficient
+            
+            C_3 = 0  # m   Spherical Aberration Coefficient
+            C_5 = 92.8
+        
+            alpha_ap = 7.37e-3  # rad Aperture angle
+            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+        
+            delta_E = 0.25  # eV  Energy Spread
+            M_L = 0.653  # Lateral Magnification
+            print("IBM ac chosen.")
+            
+        lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E)
+        lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0)
+    
+        q_ap = alpha_ap/lamda
+        q_ill = alpha_ill/lamda
+        
+    elif LEEM_type == "Energy dependent":
+        if aberration_corrected == False:
+            E = 15010  # eV  Nominal Energy After Acceleration
+            E_0 = 20 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
+            kappa = np.sqrt(E/E_0)
+            
+            C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
+            C_cc = 0.5918 * kappa**(3/2) - 87.063 # m   Third Rank Chromatic Aberration Coefficient
+            C_3c = -1.2141 * kappa**(3/2) + 169.41  # m   Forth Rank Chromatic Aberration Coefficient
+            
+            C_3 = 0.0297 * kappa**(1/2) + 0.1626  # m  Third Order Spherical Aberration Coefficient
+            C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
+            
+            delta_E = 0.25  # eV  Energy Spread
+            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            M_L = 0.653  # Lateral Magnification
+            
+            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+            alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
+            
+            print("Custom nac LEEM at E_0 = " + str(E_0) + " eV chosen.")
+            
+        if aberration_corrected == True:
+            E = 15010  # eV  Nominal Energy After Acceleration
+            E_0 = 20 # eV  Energy at the sample
+            kappa = np.sqrt(E/E_0)
+            
+            C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
+            C_cc = 0.5984 * kappa**(3/2) - 84.002 # m   Third Rank Chromatic Aberration Coefficient 
+            C_3c = -1.1652 * kappa**(3/2) + 153.58  # m   Forth Rank Chromatic Aberration Coefficient  
+            
+            C_3 = 0  # m  Third Order Spherical Aberration Coefficient
+            C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
+            
+            delta_E = 0.25  # eV  Energy Spread
+            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            M_L = 0.653  # Lateral Magnification
+            
+            lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
+            alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
+            
+            print("Custom ac LEEM at E_0 = " + str(E_0) + " eV chosen.")   
+        
+        lamda_0 = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E_0) # in metre
+        
+        q_ap = alpha_ap/lamda
+        q_ill = alpha_ill/lamda
 
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
+
+# A function to set different defocus values
+def choose_defocus(defocus_type, value = 0):
+    global delta_z
+    if defocus_type == "In-focus":
+        delta_z = 0
+        print("In-focus chosen.")
+    elif defocus_type == "Scherzer defocus":
+        delta_z = np.sqrt(3/2*C_3*lamda)
+        print("Scherzer defocus chosen.")
+    elif defocus_type == "A-Phi Scherzer defocus":
+        delta_z = np.sqrt(9/64*C_5*lamda**2)
+        print("A-Phi Scherzer defocus chosen.")
+    elif defocus_type == "custom":
+        delta_z = value
+
+choose_defocus("In-focus")
 
 
 object_size = 400               # simulating object size in nm
@@ -93,106 +198,75 @@ print("Simulation start.")
 # The object image is reversed through the lens
 object_function_reversed = object_function[::-1] 
 
-def Give_Intensity(E_val, delta_E_val, aberration_corrected_bool = False, defocus_type = "In focus", delta_z_value = 0):
-    aberration_corrected = aberration_corrected_bool
-    E = E_val
-    delta_E = delta_E_val  # eV  Energy Spread
-    E_0 = 20 # eV  Energy at the sample
-    kappa = np.sqrt(E/E_0)
-    
-    lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
-    alpha_ill = 0.1e-3  # rad Illumination divergence angle
-    M_L = 0.653  # Lateral Magnification
-    q_ill = alpha_ill/lamda
-    
-    if aberration_corrected == False:
-        C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
-        C_cc = 0.5918 * kappa**(3/2) - 87.063 # m   Third Rank Chromatic Aberration Coefficient
-        C_3c = -1.2141 * kappa**(3/2) + 169.41  # m   Forth Rank Chromatic Aberration Coefficient
-        
-        C_3 = 0.0297 * kappa**(1/2) + 0.1626  # m  Third Order Spherical Aberration Coefficient
-        C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
-        
-        alpha_ap = (lamda/C_3)**(1/4) # rad Aperture angle for optimal resolution
-        
-        
-    if aberration_corrected == True:
-        
-        C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
-        C_cc = 0.5984 * kappa**(3/2) - 84.002 # m   Third Rank Chromatic Aberration Coefficient 
-        C_3c = -1.1652 * kappa**(3/2) + 153.58  # m   Forth Rank Chromatic Aberration Coefficient  
-        
-        C_3 = 0  # m  Third Order Spherical Aberration Coefficient
-        C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
-        
-        alpha_ap = (3/2*lamda/C_5)**(1/6) # rad Aperture angle for optimal resolution
-    
-    q_ap = alpha_ap/lamda
-    
-    # Setting different defocus values
-    if defocus_type == "In focus":
-        delta_z = 0
-        print("In focus chosen.")
-    elif defocus_type == "Scherzer defocus":
-        delta_z = np.sqrt(3/2*C_3*lamda)
-        print("Scherzer defocus chosen.")
-    elif defocus_type == "A-Phi Scherzer defocus":
-        delta_z = np.sqrt(9/64*C_5*lamda**2)
-        print("A-Phi Scherzer defocus chosen.")
-    elif defocus_type == "custom":
-        delta_z = delta_z_value
-    
-    # Initialising the series of function I(x) 
-    matrixI = np.zeros_like(x_array, dtype=complex)
-    
-    # The Fourier Transform of the Object Wave Function
-    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
-    # Shifting this to the centre at 0
-    F_object_function = np.fft.fftshift(F_object_function)
-    # An array of points in the q space, in SI unit
-    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
-    # Shifting the q array to centre at 0 
-    q = q - np.max(q) / 2
-    
-    
-    # Taking into account the effect of the contrast aperture    
-    a = np.sum(np.abs(q) <= q_ap)
-    if len(q) > a:
-        min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
-        max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
-        q = q[min_index:max_index]
-        F_object_function = F_object_function[min_index:max_index]
-        
-    # Arrays for the calculation of the double integration 
-    Q, QQ = np.meshgrid(q, q)
-    F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
-    
-    # The modifying function of zeroth-order
-    R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
-    
-    # The envelop function by source extension
-    E_s = np.exp(-np.pi**2/(4*np.log(2)) * q_ill**2 * (C_3*lamda**3 *(
-        Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ))**2)
-    
-    # The envelop function by energy spread
-    E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q**2 - QQ**2))**(-1/2)
-    E_ct = E_cc * np.exp(-E_cc**2 * np.pi**2/(16*np.log(2)) * (delta_E/E)**2 * (C_c * lamda * (Q**2 - QQ**2) + 1/2*C_3c*lamda**3 * (Q**4 - QQ**4))**2)
-    
-    AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
-    for i in range(len(q)):
-        for j in range(i + 1, len(q)):
-            matrixI[:] = matrixI[:] + 2 * (
-                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real
-        
-    
-    matrixI[:] = matrixI[:] + np.trace(AR) * np.ones_like(x_array)
-    
-    matrixI = np.abs(matrixI)
-    
-    return matrixI
+# Initialising the series of function I(x) at different values of E_0
+matrixI = np.zeros_like(x_array, dtype=complex)
 
-matrixI = Give_Intensity(E_1, delta_E_1, False) + Give_Intensity(E_2, delta_E_2, False)  
+
+# The Fourier Transform of the Object Wave Function
+F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
+# Shifting this to the centre at 0
+F_object_function = np.fft.fftshift(F_object_function)
+# An array of points in the q space, in SI unit
+q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
+# Shifting the q array to centre at 0 
+q = q - np.max(q) / 2
+
+
+# Taking into account the effect of contrast aperture    
+a = np.sum(np.abs(q) <= q_ap)
+if len(q) > a:
+    min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
+    max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
+    q = q[min_index:max_index]
+    F_object_function = F_object_function[min_index:max_index]
+    
+# Arrays for the calculation of the double integration 
+Q, QQ = np.meshgrid(q, q)
+F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
+
+# The modifying function of zeroth-order
+R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
+    Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+
+sigma_E1 = 0.1497  # eV
+sigma_E2 = 0.2749  # eV
+epsilon_0 = 0.1874 # eV
+mu_1 = 104.8
+mu_2 = 54.72
+
+sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+
+a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+
+b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
+b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E2**2) 
+
+# The envelop function by source extension
+E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
+
+## The chromatic envelop functions for source 1  
+E_cc1 = (1 - 1j*4*np.pi*b_2*sigma_E1**2)**(-1/2)
+E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *b_1**2)
+
+## The chromatic envelop functions for source 2 
+E_cc2 = (1 - 1j*4*np.pi*b_2*sigma_E2**2)**(-1/2)
+E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p**2)
+
+# The total chromatic envelop functions
+E_ctot = mu_1*E_ct1 + mu_2*E_ct2
+
+AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ctot)
+for i in range(len(q)):
+    for j in range(i + 1, len(q)):
+        matrixI[:] = matrixI[:] + 2 * (
+                AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real
+    
+
+matrixI[:] = matrixI[:] + np.trace(AR) * np.ones_like(x_array)
+
+
+matrixI = np.abs(matrixI)
 
 print('Simulation finished.')
 
@@ -210,26 +284,46 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 ##################################
 ######## Analysing Results #######
 ##################################
+'''
+########## Plotting the object ###########
+plt.plot(x_array, object_amplitude)
+plt.plot(x_array, object_phase)
+'''
+
+########## Plotting the curve ############
+plt.plot(x_array*1e9, matrixI)
+
+plt.xlim(-10, 10)
+# naming the x axis
+plt.xlabel('Position x (nm)')
+# naming the y axis
+plt.ylabel('Instensity')
+  
+# giving a title to my graph
+plt.title('I(x)')
+
+plt.show()
+
 
 ######## Calculating the resolution for the object ########
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
     half_steps = int(simulating_steps/2)
     # Starting from the centre and find the local minimum to the right of the central point
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
         
     # Starting from the centre and find the local maximum to the left of the central point
     I_max = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps-j] >= I_max:
+    for j in range(1, half_steps):
+        if matrixI[half_steps-j] > I_max:
             I_max = matrixI[half_steps-j]            
         else:
-            idx_max = half_steps-j
+            idx_max = half_steps-j+1
             break
         
     
@@ -237,8 +331,13 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
     x_array_focus = x_array[idx_max:idx_min]
     matrixI_focus = matrixI[idx_max:idx_min]
     
-    I_84 = I_min + (I_max - I_min)*84/100
-    I_16 = I_min + (I_max - I_min)*16/100
+    I_100_index = np.argmin(np.abs(matrixI_focus - 1))
+    I_100 = matrixI_focus[I_100_index]
+    I_0_index = np.argmin(np.abs(matrixI_focus - 1/2))
+    I_0 = matrixI_focus[I_0_index]
+    
+    I_84 = I_0 + (I_100 - I_0)*84/100
+    I_16 = I_0 + (I_100 - I_0)*16/100
     
     I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
     x_84 = x_array_focus[I_84_index]
@@ -250,36 +349,37 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local minimum around the central point
     half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
-    for j in range(half_steps):
-        if matrixI[half_steps+j] <= I_min:
+    for j in range(1, half_steps):
+        if matrixI[half_steps+j] < I_min:
             I_min = matrixI[half_steps+j]
         else:
-            idx_min = half_steps+j
+            idx_min = half_steps+j-1
             break
     
-    for j in range(half_steps):
-        if matrixI[half_steps-j] <= I_min:
-            I_min = matrixI[half_steps-j]
+    current_min_idx = idx_min
+    for j in range(1, half_steps):
+        if matrixI[current_min_idx-j] < I_min:
+            I_min = matrixI[current_min_idx-j]
         else:
-            idx_min = half_steps-j
+            idx_min = current_min_idx-j+1
             break
-        
+    
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min+j] >= I_right:
+    for j in range(1, half_steps):
+        if matrixI[idx_min+j] > I_right:
             I_right = matrixI[idx_min+j]
         else:
-            idx_right = idx_min+j
+            idx_right = idx_min+j-1
             break
         
     # Finding the local maximum to the left of this minimum
     I_left = matrixI[idx_min]
-    for j in range(half_steps):
-        if matrixI[idx_min-j] >= I_left:
+    for j in range(1, half_steps):
+        if matrixI[idx_min-j] > I_left:
             I_left = matrixI[idx_min-j]            
         else:
-            idx_left = idx_min-j
+            idx_left = idx_min-j+1
             break
         
     # The dip is counted from the lower value between I_left and I_right
@@ -290,7 +390,11 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
         idx_right = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_left))
         I_right = matrixI[idx_right]    
         
-    
+    # Shifting the left and right points of consideration to those of value 1
+    I_left_index = np.argmin(np.abs(matrixI[idx_left:idx_min] - 1))
+    I_left = matrixI[idx_left]
+    I_right_index = np.argmin(np.abs(matrixI[idx_min:idx_right] - 1))
+    I_right = matrixI[idx_right]
     
     I_50left = I_min + (I_left - I_min)/2
     I_50right = I_min + (I_right - I_min)/2
@@ -326,27 +430,9 @@ with open(filename, 'w') as csvfile:
  
     csvfile.close()
 
-
-########## Plotting the object ###########
-plt.plot(x_array, object_amplitude)
-plt.plot(x_array, object_phase)
 '''
 
-########## Plotting the curve ############
-plt.plot(x_array, matrixI)
-
-plt.xlim(-10e-9, 10e-9)
-# naming the x axis
-plt.xlabel('Position x (m)')
-# naming the y axis
-plt.ylabel('Instensity')
-  
-# giving a title to my graph
-plt.title('I(x)')
-
-plt.show()
 
 ################################
 ###### End of Programme ########
 ################################
-
