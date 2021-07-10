@@ -184,7 +184,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-create_object("Step phase object", k = 0.5)
+create_object("Step phase object", k = 1)
 
 ##################################
 ######## End of Preamble #########
