@@ -1,3 +1,4 @@
+# Double Gaussian distribution 
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -8,6 +9,7 @@ import math
 ######### Preamble ###########
 ##############################
 
+print("Double Gaussian distribution simulation")
 
 # A function to choose different LEEM parameters
 def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
@@ -182,7 +184,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-create_object("Step phase object", k = 1)
+create_object("Step phase object", k = 0.5)
 
 ##################################
 ######## End of Preamble #########
@@ -231,8 +233,8 @@ R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
 sigma_E1 = 0.1497  # eV
 sigma_E2 = 0.2749  # eV
 epsilon_0 = 0.1874 # eV
-mu_1 = 104.8
-mu_2 = 54.72
+mu_1 = 0.6570
+mu_2 = 0.3430
 
 sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
 
@@ -245,13 +247,13 @@ b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E2**2)
 # The envelop function by source extension
 E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
 
-## The chromatic envelop functions for source 1  
+## The chromatic envelop functions for the 1st Gaussian distribution  
 E_cc1 = (1 - 1j*4*np.pi*b_2*sigma_E1**2)**(-1/2)
 E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *b_1**2)
 
-## The chromatic envelop functions for source 2 
+## The chromatic envelop functions for the 2nd Gaussian distribution  
 E_cc2 = (1 - 1j*4*np.pi*b_2*sigma_E2**2)**(-1/2)
-E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p**2)
+E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E2**2))
 
 # The total chromatic envelop functions
 E_ctot = mu_1*E_ct1 + mu_2*E_ct2
@@ -408,7 +410,7 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
 
 print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
 
-'''
+
 # Save this list of resolution into a csv file
 if LEEM_type == 'IBM':
     if aberration_corrected == False:
@@ -420,6 +422,8 @@ if LEEM_type == 'Energy dependent':
         filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
     if aberration_corrected == True:
         filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
+        
+filename = "2Gauss " + filename 
 
 with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
@@ -430,7 +434,7 @@ with open(filename, 'w') as csvfile:
  
     csvfile.close()
 
-'''
+
 
 
 ################################
