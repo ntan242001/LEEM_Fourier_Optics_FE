@@ -107,7 +107,6 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
         q_ap = alpha_ap/lamda
         q_ill = alpha_ill/lamda
 
-choose_LEEM_type("IBM", aberration_corrected_bool = False)
 
 # A function to set different defocus values
 def choose_defocus(defocus_type, value = 0):
@@ -123,8 +122,6 @@ def choose_defocus(defocus_type, value = 0):
         print("A-Phi Scherzer defocus chosen.")
     elif defocus_type == "custom":
         delta_z = value
-
-choose_defocus("In-focus")
 
 
 object_size = 400               # simulating object size in nm
@@ -182,6 +179,8 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
+choose_defocus("In-focus")
 create_object("Step phase object", k = 1)
 
 ##################################
