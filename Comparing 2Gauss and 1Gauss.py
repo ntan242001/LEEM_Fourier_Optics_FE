@@ -1,4 +1,4 @@
-# Comparing the single and double Gaussian distributions
+# Comparing the single and double Gaussian distributions for different aperture angles
 import numpy as np
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
