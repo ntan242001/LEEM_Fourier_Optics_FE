@@ -435,7 +435,7 @@ a_array_ac = []
 a_array_nac = []
 R_ac = []
 R_nac = []
-with open('Step amplitude object_R(E_0)_IBM_ac.csv', 'r') as csvfile:
+with open('Step amplitude object_R(a)_IBM_ac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -448,7 +448,7 @@ with open('Step amplitude object_R(E_0)_IBM_ac.csv', 'r') as csvfile:
                 a_array_ac.append(float(row[0]))
                 R_ac.append(float(row[1]))    
     csvfile.close()
-with open('Step amplitude object_R(E_0)_IBMnac.csv', 'r') as csvfile:
+with open('Step amplitude object_R(a)_IBMnac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
