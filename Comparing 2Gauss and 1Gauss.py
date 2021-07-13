@@ -181,7 +181,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-choose_LEEM_type("IBM", aberration_corrected_bool = False)
+choose_LEEM_type("IBM", aberration_corrected_bool = True)
 choose_defocus("In-focus")
 create_object("Step phase object", k = 1/2)
 
@@ -200,8 +200,7 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.append(np.linspace(0.1*1e-3, 1*1e-3, 9), np.linspace(1*1e-3, 6*1e-3, 24))
-
+alpha_ap_series = np.append(np.linspace(0.3*1e-3, 3.5*1e-3, 33), np.linspace(3.6*1e-3, 5*1e-3, 12))
 
 q_ap_series = alpha_ap_series/lamda
 
@@ -295,7 +294,8 @@ def Image2Gauss(q_ap, q_ap_index):
     
     sigma_E1 = 0.1497  # eV
     sigma_E2 = 0.2749  # eV
-    epsilon_0 = 0.1874 # eV
+    #epsilon_0 = 0.1874 # eV
+    epsilon_0 = -0.1874 # eV
     mu_1 = 0.6570
     mu_2 = 0.3430
     
@@ -367,13 +367,15 @@ for i in range(len(alpha_ap_series)):
     plt.plot(x_array, matrixI2[:, i], label = 'Double Gaussian')
     
     plt.xlim(-20e-9, 20e-9)
+    plt.ylim(0, 1.5)
+    
     # naming the x axis
     plt.xlabel('Position x (m)')
     # naming the y axis
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\phi = \\frac{\pi}{2}$, aperture angle = ' + str(round(alpha_ap_series[i]*1e3, 3)) + ' mrad')
+    plt.title('$\Delta z = 0$, $\phi = \\frac{\pi}{2}$, $\\alpha_{ap}$ = ' + str(round(alpha_ap_series[i]*1e3, 3)) + ' mrad')
     plt.legend()
     
     plt.show()
@@ -571,3 +573,4 @@ plt.show()
 ################################
 ###### End of Programme ########
 ################################
+
