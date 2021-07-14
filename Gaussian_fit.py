@@ -4,13 +4,13 @@ import csv
 from scipy.optimize import curve_fit
 
 
-def gauss(x, H, A, x0, sigma):
-    return H + A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
+def gauss(x, A, x0, sigma):
+    return A * np.exp(-(x - x0) ** 2 / (2 * sigma ** 2))
 
 def gauss_fit(x, y):
     mean = sum(x * y) / sum(y)
     sigma = np.sqrt(sum(y * (x - mean) ** 2) / sum(y))
-    popt, pcov = curve_fit(gauss, x, y, p0=[min(y), max(y), mean, sigma])
+    popt, pcov = curve_fit(gauss, x, y, p0=[max(y), mean, sigma])
     return popt
 
 energy = []
@@ -33,14 +33,14 @@ with open('Field_emission_distribution.csv', 'r') as csvfile:
 energy = np.array(energy)
 counts = np.array(counts)
 
-H, A, x0, sigma = gauss_fit(energy, counts)
+A, x0, sigma = gauss_fit(energy, counts)
 
 FWHM = 2*np.sqrt(2*np.log(2)) * sigma
 
 
 ########## Plotting the curve ############
 plt.scatter(energy, counts, s=5, c='k')
-plt.plot(energy, gauss(energy, H, A, x0, sigma), '--r', label='Gaussian fit')
+plt.plot(energy, gauss(energy, A, x0, sigma), '--r', label='Gaussian fit')
 
 plt.xlim(-1.3, 1.8)
 # naming the x axis
@@ -52,3 +52,6 @@ plt.title('Field emission distribution')
 plt.legend()
 
 plt.show()
+
+print('Full width half maximum: ' +  str(round(FWHM, 4)) + ' eV')
+print('Norminal energy: ' + str(round(x0, 5)) + ' eV')
