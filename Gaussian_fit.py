@@ -53,5 +53,5 @@ plt.legend()
 
 plt.show()
 
-print('Full width half maximum: ' +  str(round(FWHM, 4)) + ' eV')
+print('Full width half maximum: ' +  str(round(FWHM, 5)) + ' eV, corresponding to sigma = ' + str(round(sigma, 5)))
 print('Norminal energy: ' + str(round(x0, 5)) + ' eV')
