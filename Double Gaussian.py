@@ -230,9 +230,9 @@ R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
 
 sigma_E1 = 0.1497  # eV
 sigma_E2 = 0.2749  # eV
-epsilon_0 = 0.1874 # eV
-mu_1 = 0.6570
-mu_2 = 0.3430
+epsilon_0 = -0.1874 # eV
+mu_1 = 0.58573
+mu_2 = 0.41427
 
 sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
 
