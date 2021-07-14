@@ -181,7 +181,7 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-choose_LEEM_type("IBM", aberration_corrected_bool = True)
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
 choose_defocus("In-focus")
 create_object("Step phase object", k = 1/2)
 
@@ -234,15 +234,23 @@ def Image1Gauss(q_ap, q_ap_index):
     
     # The modifying function of zeroth-order
     R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-        Q**6 - QQ**6)/6 - 1/2*delta_z*lamda*(Q**2 - QQ**2)))
+        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+    
+    delta_E = 0.455 # eV
+    sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
+    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+    
+    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+    
+    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
     
     # The envelop function by source extension
-    E_s = np.exp(-np.pi**2/(4*np.log(2)) * q_ill**2 * (C_3*lamda**3 *(
-        Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ))**2)
+    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
     
-    # The envelop function by energy spread
-    E_cc = (1 - 1j * np.pi/(4*np.log(2)) * C_cc*(delta_E/E)**2 * lamda * (Q**2 - QQ**2))**(-1/2)
-    E_ct = E_cc * np.exp(-E_cc**2 * np.pi**2/(16*np.log(2)) * (delta_E/E)**2 * (C_c * lamda * (Q**2 - QQ**2) + 1/2*C_3c*lamda**3 * (Q**4 - QQ**4))**2)
+    # The purely chromatic envelop functions
+    E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
+    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
     
     AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
     for i in range(len(q)):
@@ -294,10 +302,9 @@ def Image2Gauss(q_ap, q_ap_index):
     
     sigma_E1 = 0.1497  # eV
     sigma_E2 = 0.2749  # eV
-    #epsilon_0 = 0.1874 # eV
     epsilon_0 = -0.1874 # eV
-    mu_1 = 0.6570
-    mu_2 = 0.3430
+    mu_1 = 0.58573
+    mu_2 = 0.41427
     
     sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
     
