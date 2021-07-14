@@ -37,6 +37,7 @@ with open('Field_emission_distribution.csv', 'r') as csvfile:
 
 energy = np.array(energy)
 counts = np.array(counts)
+energyticks = np.linspace(-1, 1.5, 100)
 
 mu1, x01, sigma1, mu2, x02, sigma2 = double_gauss_fit(energy, counts)
 sigma1 = abs(sigma1)
@@ -48,13 +49,14 @@ FWHM2 = 2*np.sqrt(2*np.log(2)) * sigma2
 
 ########## Plotting the curve ############
 plt.scatter(energy, counts, s=5, c='k')
-plt.plot(energy, double_gauss(energy, mu1, x01, sigma1, mu2, x02, sigma2), '--r', label='Double Gaussian fit')
+plt.plot(energyticks, double_gauss(energyticks, mu1, x01, sigma1, mu2, x02, sigma2), '--r', label='Double Gaussian fit')
 
-plt.plot(energy, gauss(energy, mu1, x01, sigma1), 'b', label='First Gaussian')
+plt.plot(energyticks, gauss(energyticks, mu1, x01, sigma1), 'b', label='First Gaussian')
 
-plt.plot(energy, gauss(energy, mu2, x02, sigma2), 'g', label='Second Gaussian')
+plt.plot(energyticks, gauss(energyticks, mu2, x02, sigma2), 'g', label='Second Gaussian')
 
 plt.xlim(-1.3, 1.8)
+plt.ylim(0, 175)
 # naming the x axis
 plt.xlabel('Energy (eV)')
 # naming the y axis
