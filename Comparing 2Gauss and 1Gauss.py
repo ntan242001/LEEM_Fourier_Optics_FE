@@ -263,8 +263,65 @@ def Image1Gauss(q_ap, q_ap_index):
 
     return matrixI
 
+
+def Image1Gauss15(q_ap, q_ap_index):    
+    matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
+    # The Fourier Transform of the Object Wave Function
+    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
+    # Shifting this to the centre at 0
+    F_object_function = np.fft.fftshift(F_object_function)
+    # An array of points in the q space, in SI unit
+    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
+    # Shifting the q array to centre at 0 
+    q = q - np.max(q) / 2
+    
+    # Taking into account the effect of the contrast aperture    
+    a = np.sum(np.abs(q) <= q_ap)
+    if len(q) > a:
+        min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
+        max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
+        q = q[min_index:max_index]
+        F_object_function = F_object_function[min_index:max_index]
+        
+    # Arrays for the calculation of the double integration 
+    Q, QQ = np.meshgrid(q, q)
+    F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
+    
+    # The modifying function of zeroth-order
+    R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
+        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+    
+    delta_E = 0.455 # eV
+    sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
+    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+    epsilon_0 = -0.1874 # eV
+    
+    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+    
+    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
+    b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
+    
+    # The envelop function by source extension
+    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
+    
+    # The purely chromatic envelop functions
+    E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
+    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E**2))
+    
+    AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
+    for i in range(len(q)):
+        for j in range(i + 1, len(q)):
+            matrixI[:, q_ap_index] = matrixI[:, q_ap_index] + 2 * (
+                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real
+        
+
+    matrixI[:, q_ap_index] = matrixI[:, q_ap_index] + np.trace(AR) * np.ones_like(x_array)
+
+    return matrixI
+
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image1Gauss)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
+    parallelResult = parallel(delayed(Image1Gauss15)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
 
 for mat in parallelResult:
     matrixI1 = matrixI1 + mat
@@ -273,7 +330,7 @@ matrixI1 = np.abs(matrixI1)
 
 
 # A function to calculate the image for double Gaussian distribution 
-def Image2Gauss(q_ap, q_ap_index):    
+def Image2Gauss(q_ap, q_ap_index):
     matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
     # The Fourier Transform of the Object Wave Function
     F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
@@ -339,8 +396,77 @@ def Image2Gauss(q_ap, q_ap_index):
 
     return matrixI
 
+# A function to calculate the image for double Gaussian distribution 
+def Image2Gauss15(q_ap, q_ap_index):    
+    matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
+    # The Fourier Transform of the Object Wave Function
+    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
+    # Shifting this to the centre at 0
+    F_object_function = np.fft.fftshift(F_object_function)
+    # An array of points in the q space, in SI unit
+    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
+    # Shifting the q array to centre at 0 
+    q = q - np.max(q) / 2
+    
+    # Taking into account the effect of the contrast aperture    
+    a = np.sum(np.abs(q) <= q_ap)
+    if len(q) > a:
+        min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
+        max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
+        q = q[min_index:max_index]
+        F_object_function = F_object_function[min_index:max_index]
+        
+    # Arrays for the calculation of the double integration 
+    Q, QQ = np.meshgrid(q, q)
+    F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
+    
+    # The modifying function of zeroth-order
+    R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
+        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+    
+    sigma_E1 = 0.1497  # eV
+    sigma_E2 = 0.2749  # eV
+    epsilon_1 = 0.02247 - 0.15 # eV
+    epsilon_2 = 0.20991 - 0.15 # eV
+    mu_1 = 0.58573
+    mu_2 = 0.41427
+    
+    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+    
+    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+    
+    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
+    b_1p1 = b_1 - 1j*epsilon_1/(2*np.pi*sigma_E1**2) 
+    b_1p2 = b_1 - 1j*epsilon_2/(2*np.pi*sigma_E2**2) 
+    
+    # The envelop function by source extension
+    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
+    
+    ## The chromatic envelop functions for the 1st Gaussian distribution  
+    E_cc1 = (1 - 1j*4*np.pi*b_2*sigma_E1**2)**(-1/2)
+    E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *b_1p1**2) * np.exp(- epsilon_1**2/(2*sigma_E1**2))
+    
+    ## The chromatic envelop functions for the 2nd Gaussian distribution  
+    E_cc2 = (1 - 1j*4*np.pi*b_2*sigma_E2**2)**(-1/2)
+    E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p2**2) * np.exp(- epsilon_2**2/(2*sigma_E2**2))
+    
+    # The total chromatic envelop functions
+    E_ctot = mu_1*E_ct1 + mu_2*E_ct2
+    
+    AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ctot)
+    for i in range(len(q)):
+        for j in range(i + 1, len(q)):
+            matrixI[:, q_ap_index] = matrixI[:, q_ap_index] + 2 * (
+                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real 
+        
+
+    matrixI[:, q_ap_index] = matrixI[:, q_ap_index] + np.trace(AR) * np.ones_like(x_array) 
+
+    return matrixI
+
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image2Gauss)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
+    parallelResult = parallel(delayed(Image2Gauss15)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
 
 for mat in parallelResult:
     matrixI2 = matrixI2 + mat
