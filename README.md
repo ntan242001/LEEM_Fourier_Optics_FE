@@ -1,5 +1,5 @@
 
-# Fourier Optics for Image Formation in LEEM
+# Fourier Optics of Image Formation in LEEM
 
 ## Description
 This project contains programmes that simulate and analyse images formed by Low Energy Electron Microscopy (LEEM). The principle and calculations are based on the following articles: 
