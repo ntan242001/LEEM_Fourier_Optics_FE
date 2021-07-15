@@ -200,13 +200,14 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.append(np.linspace(0.3*1e-3, 3.5*1e-3, 33), np.linspace(3.6*1e-3, 5*1e-3, 12))
+alpha_ap_series = np.linspace(2.1*1e-3, 2.6*1e-3, 6)
 
 q_ap_series = alpha_ap_series/lamda
 
 # Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
 matrixI2 = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
+matrixI0 = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
 
 # A function to calculate the image for single Gaussian distribution
 def Image1Gauss(q_ap, q_ap_index):    
@@ -263,8 +264,15 @@ def Image1Gauss(q_ap, q_ap_index):
 
     return matrixI
 
+with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
+    parallelResult = parallel(delayed(Image1Gauss)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
 
-def Image1Gauss15(q_ap, q_ap_index):    
+for mat in parallelResult:
+    matrixI0 = matrixI0 + mat
+
+matrixI0 = np.abs(matrixI0)
+
+def Image1Gauss_s15r(q_ap, q_ap_index):    
     matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
     # The Fourier Transform of the Object Wave Function
     F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
@@ -294,7 +302,7 @@ def Image1Gauss15(q_ap, q_ap_index):
     delta_E = 0.455 # eV
     sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
     sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
-    epsilon_0 = -0.1874 # eV
+    epsilon_0 = - 0.06033 - 0.15 # eV
     
     a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
     
@@ -321,7 +329,7 @@ def Image1Gauss15(q_ap, q_ap_index):
     return matrixI
 
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image1Gauss15)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
+    parallelResult = parallel(delayed(Image1Gauss_s15r)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
 
 for mat in parallelResult:
     matrixI1 = matrixI1 + mat
@@ -396,8 +404,9 @@ def Image2Gauss(q_ap, q_ap_index):
 
     return matrixI
 
+
 # A function to calculate the image for double Gaussian distribution 
-def Image2Gauss15(q_ap, q_ap_index):    
+def Image2Gauss_s15_r(q_ap, q_ap_index):    
     matrixI = np.zeros((len(x_array), len(q_ap_series)), dtype=complex)
     # The Fourier Transform of the Object Wave Function
     F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
@@ -426,8 +435,8 @@ def Image2Gauss15(q_ap, q_ap_index):
     
     sigma_E1 = 0.1497  # eV
     sigma_E2 = 0.2749  # eV
-    epsilon_1 = 0.02247 - 0.15 # eV
-    epsilon_2 = 0.20991 - 0.15 # eV
+    epsilon_1 = - 0.02247 - 0.15 # eV
+    epsilon_2 = - 0.20991 - 0.15 # eV
     mu_1 = 0.58573
     mu_2 = 0.41427
     
@@ -466,7 +475,7 @@ def Image2Gauss15(q_ap, q_ap_index):
     return matrixI
 
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image2Gauss15)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
+    parallelResult = parallel(delayed(Image2Gauss_s15_r)(q_ap, q_ap_index) for q_ap_index, q_ap in enumerate(q_ap_series))
 
 for mat in parallelResult:
     matrixI2 = matrixI2 + mat
@@ -496,8 +505,9 @@ plt.plot(x_array, object_phase)
 
 # plotting the curves
 for i in range(len(alpha_ap_series)):
-    plt.plot(x_array, matrixI1[:, i], label = 'Single Gaussian')
-    plt.plot(x_array, matrixI2[:, i], label = 'Double Gaussian')
+    plt.plot(x_array, matrixI1[:, i], label = 'Single Gaussian sr')
+    plt.plot(x_array, matrixI2[:, i], label = 'Double Gaussian sr')
+    plt.plot(x_array, matrixI0[:, i], label = 'Single Gaussian')
     
     plt.xlim(-20e-9, 20e-9)
     plt.ylim(0, 1.5)
