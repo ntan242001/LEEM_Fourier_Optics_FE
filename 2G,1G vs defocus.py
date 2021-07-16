@@ -198,7 +198,7 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
-delta_z_series = np.linspace(-100*1e-6, +100*1e-6, 21)
+delta_z_series = np.linspace(-5*1e-6, +5*1e-6, 11)
 
 # Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
@@ -505,8 +505,8 @@ for i in range(len(delta_z_series)):
     plt.plot(x_array, matrixI2[:, i], label = 'Double Gaussian sr')
     plt.plot(x_array, matrixI0[:, i], label = 'Single Gaussian')
     
-    plt.xlim(-20e-9, 20e-9)
-    plt.ylim(0, 1.5)
+    plt.xlim(-25e-9, 25e-9)
+    plt.ylim(0, 1.8)
     
     # naming the x axis
     plt.xlabel('Position x (m)')
@@ -514,7 +514,7 @@ for i in range(len(delta_z_series)):
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = \\frac{\pi}{2}$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e3, 3)) + ' mrad')
+    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = \\frac{\pi}{2}$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' \\mu m')
     plt.legend()
     
     plt.show()
