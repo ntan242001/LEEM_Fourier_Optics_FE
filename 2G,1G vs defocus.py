@@ -181,7 +181,7 @@ def create_object(object_type_str, k = 1):
     print(object_type + " created")
 
 choose_LEEM_type("IBM", aberration_corrected_bool = False)
-create_object("Step phase object", k = 1/2)
+create_object("Step phase object", k = 1)
 
 ##################################
 ######## End of Preamble #########
@@ -198,7 +198,8 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
-delta_z_series = np.linspace(-5*1e-6, +5*1e-6, 11)
+delta_z_series = np.append(np.linspace(-5*1e-6, -3*1e-6, 5), np.linspace(-2.5*1e-6, 2.5*1e-6, 1 + 2*25))
+delta_z_series = np.append(delta_z_series, np.linspace(3*1e-6, +5*1e-6, 5))
 
 # Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
@@ -514,7 +515,7 @@ for i in range(len(delta_z_series)):
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = \\frac{\pi}{2}$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' \\mu m')
+    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = \\frac{\pi}{2}$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' $\mu m$')
     plt.legend()
     
     plt.show()
