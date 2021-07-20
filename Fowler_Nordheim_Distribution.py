@@ -27,25 +27,3 @@ counts = (np.exp(E_array*e*d_0_inv) - 1)*f_E
 plt.plot(E_array - E_F, counts)
 plt.axvline(x=0, color = 'k')
 plt.text()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
