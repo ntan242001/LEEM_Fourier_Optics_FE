@@ -26,4 +26,9 @@ counts = (np.exp(E_array*e*d_0_inv) - 1)*f_E
 
 plt.plot(E_array - E_F, counts)
 plt.axvline(x=0, color = 'k')
-plt.text()
+
+plt.ylabel('Counts')
+plt.xlabel('Electron energy (eV)')
+
+plt.text(-0.07, 0, '$E_F$')
+print(list(counts))
