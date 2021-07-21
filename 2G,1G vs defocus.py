@@ -63,7 +63,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
     elif LEEM_type == "Energy dependent":
         if aberration_corrected == False:
             E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
+            E_0 = 11.5 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
             kappa = np.sqrt(E/E_0)
             
             C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
@@ -84,7 +84,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             
         if aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample
+            E_0 = 11.5 # eV  Energy at the sample
             kappa = np.sqrt(E/E_0)
             
             C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
@@ -180,8 +180,8 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-choose_LEEM_type("IBM", aberration_corrected_bool = False)
-create_object("Step phase object", k = 1)
+choose_LEEM_type("Energy dependent", aberration_corrected_bool = False)
+create_object("Step phase object", k = 2.61)
 
 ##################################
 ######## End of Preamble #########
@@ -198,13 +198,15 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
+'''
 delta_z_series = np.append(np.linspace(-5*1e-6, -3*1e-6, 5), np.linspace(-2.5*1e-6, 2.5*1e-6, 1 + 2*25))
 delta_z_series = np.append(delta_z_series, np.linspace(3*1e-6, +5*1e-6, 5))
+'''
+delta_z_series = np.linspace(-5*1e-6, 5*1e-6, 5)
 
 # Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
 matrixI2 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
-matrixI0 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
 
 # A function to calculate the image for single Gaussian distribution
 def Image1Gauss(delta_z, delta_z_index):    
@@ -234,7 +236,7 @@ def Image1Gauss(delta_z, delta_z_index):
     R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
         Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
     
-    delta_E = 0.455 # eV
+    delta_E = 0.2424 # eV
     sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
     sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
     
@@ -263,70 +265,6 @@ def Image1Gauss(delta_z, delta_z_index):
 
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
     parallelResult = parallel(delayed(Image1Gauss)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
-
-for mat in parallelResult:
-    matrixI0 = matrixI0 + mat
-
-matrixI0 = np.abs(matrixI0)
-
-def Image1Gauss_s15r(delta_z, delta_z_index):    
-    matrixI = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
-    # The Fourier Transform of the Object Wave Function
-    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
-    # Shifting this to the centre at 0
-    F_object_function = np.fft.fftshift(F_object_function)
-    # An array of points in the q space, in SI unit
-    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
-    # Shifting the q array to centre at 0 
-    q = q - np.max(q) / 2
-    
-    # Taking into account the effect of the contrast aperture    
-    a = np.sum(np.abs(q) <= q_ap)
-    if len(q) > a:
-        min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
-        max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
-        q = q[min_index:max_index]
-        F_object_function = F_object_function[min_index:max_index]
-        
-    # Arrays for the calculation of the double integration 
-    Q, QQ = np.meshgrid(q, q)
-    F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
-    
-    # The modifying function of zeroth-order
-    R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
-    
-    delta_E = 0.455 # eV
-    sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
-    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
-    epsilon_0 = - 0.06033 - 0.15 # eV
-    
-    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
-    
-    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
-    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
-    b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
-    
-    # The envelop function by source extension
-    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
-    
-    # The purely chromatic envelop functions
-    E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
-    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E**2))
-    
-    AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
-    for i in range(len(q)):
-        for j in range(i + 1, len(q)):
-            matrixI[:, delta_z_index] = matrixI[:, delta_z_index] + 2 * (
-                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real
-        
-
-    matrixI[:, delta_z_index] = matrixI[:, delta_z_index] + np.trace(AR) * np.ones_like(x_array)
-
-    return matrixI
-
-with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image1Gauss_s15r)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
 
 for mat in parallelResult:
     matrixI1 = matrixI1 + mat
@@ -362,11 +300,15 @@ def Image2Gauss(delta_z, delta_z_index):
     R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
         Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
     
-    sigma_E1 = 0.1497  # eV
-    sigma_E2 = 0.2749  # eV
-    epsilon_0 = -0.1874 # eV
-    mu_1 = 0.58573
-    mu_2 = 0.41427
+    sigma_E1 = 0.0531  # eV
+    sigma_E2 = 0.1991  # eV
+    sigma_E3 = 0.0962  # eV
+    epsilon_1 = -0.03925 # eV
+    epsilon_2 = -0.3382  # eV
+    epsilon_3 = -0.1438  # eV
+    mu_1 = 0.28682
+    mu_2 = 0.33146
+    mu_3 = 0.38173
     
     sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
     
@@ -374,21 +316,28 @@ def Image2Gauss(delta_z, delta_z_index):
     
     b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
     b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
-    b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E2**2) 
+    
+    c_1 = b_1 - 1j*epsilon_1/(2*np.pi*sigma_E1**2)
+    c_2 = b_1 - 1j*epsilon_2/(2*np.pi*sigma_E2**2)
+    c_3 = b_1 - 1j*epsilon_3/(2*np.pi*sigma_E3**2)
     
     # The envelop function by source extension
     E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
     
     ## The chromatic envelop functions for the 1st Gaussian distribution  
     E_cc1 = (1 - 1j*4*np.pi*b_2*sigma_E1**2)**(-1/2)
-    E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *b_1**2)
+    E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *c_1**2) * np.exp(- epsilon_1**2/(2*sigma_E1**2))
     
     ## The chromatic envelop functions for the 2nd Gaussian distribution  
     E_cc2 = (1 - 1j*4*np.pi*b_2*sigma_E2**2)**(-1/2)
-    E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E2**2))
+    E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *c_2**2) * np.exp(- epsilon_2**2/(2*sigma_E2**2))
+    
+    ## The chromatic envelop functions for the 3rd Gaussian distribution  
+    E_cc3 = (1 - 1j*4*np.pi*b_2*sigma_E3**2)**(-1/2)
+    E_ct3 = E_cc3 * np.exp(-2*np.pi**2 *E_cc3**2 *sigma_E3**2 *c_3**2) * np.exp(- epsilon_3**2/(2*sigma_E3**2))
     
     # The total chromatic envelop functions
-    E_ctot = mu_1*E_ct1 + mu_2*E_ct2
+    E_ctot = mu_1*E_ct1 + mu_2*E_ct2 + mu_3*E_ct3
     
     AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ctot)
     for i in range(len(q)):
@@ -401,83 +350,14 @@ def Image2Gauss(delta_z, delta_z_index):
 
     return matrixI
 
-
-# A function to calculate the image for double Gaussian distribution 
-def Image2Gauss_s15_r(delta_z, delta_z_index):    
-    matrixI = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
-    # The Fourier Transform of the Object Wave Function
-    F_object_function = np.fft.fft(object_function_reversed, simulating_steps) * (1 / simulating_steps)
-    # Shifting this to the centre at 0
-    F_object_function = np.fft.fftshift(F_object_function)
-    # An array of points in the q space, in SI unit
-    q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
-    # Shifting the q array to centre at 0 
-    q = q - np.max(q) / 2
-    
-    # Taking into account the effect of the contrast aperture    
-    a = np.sum(np.abs(q) <= q_ap)
-    if len(q) > a:
-        min_index = int(np.ceil(simulating_steps / 2 + 1 - (a - 1) / 2))
-        max_index = int(np.floor(simulating_steps / 2 + 1 + (a + 1) / 2))
-        q = q[min_index:max_index]
-        F_object_function = F_object_function[min_index:max_index]
-        
-    # Arrays for the calculation of the double integration 
-    Q, QQ = np.meshgrid(q, q)
-    F_obj_q, F_obj_qq = np.meshgrid(F_object_function, np.conj(F_object_function))
-    
-    # The modifying function of zeroth-order
-    R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
-        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
-    
-    sigma_E1 = 0.1497  # eV
-    sigma_E2 = 0.2749  # eV
-    epsilon_1 = - 0.02247 - 0.15 # eV
-    epsilon_2 = - 0.20991 - 0.15 # eV
-    mu_1 = 0.58573
-    mu_2 = 0.41427
-    
-    sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
-    
-    a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
-    
-    b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
-    b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
-    b_1p1 = b_1 - 1j*epsilon_1/(2*np.pi*sigma_E1**2) 
-    b_1p2 = b_1 - 1j*epsilon_2/(2*np.pi*sigma_E2**2) 
-    
-    # The envelop function by source extension
-    E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
-    
-    ## The chromatic envelop functions for the 1st Gaussian distribution  
-    E_cc1 = (1 - 1j*4*np.pi*b_2*sigma_E1**2)**(-1/2)
-    E_ct1 = E_cc1 * np.exp(-2*np.pi**2 *E_cc1**2 *sigma_E1**2 *b_1p1**2) * np.exp(- epsilon_1**2/(2*sigma_E1**2))
-    
-    ## The chromatic envelop functions for the 2nd Gaussian distribution  
-    E_cc2 = (1 - 1j*4*np.pi*b_2*sigma_E2**2)**(-1/2)
-    E_ct2 = E_cc2 * np.exp(-2*np.pi**2 *E_cc2**2 *sigma_E2**2 *b_1p2**2) * np.exp(- epsilon_2**2/(2*sigma_E2**2))
-    
-    # The total chromatic envelop functions
-    E_ctot = mu_1*E_ct1 + mu_2*E_ct2
-    
-    AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ctot)
-    for i in range(len(q)):
-        for j in range(i + 1, len(q)):
-            matrixI[:, delta_z_index] = matrixI[:, delta_z_index] + 2 * (
-                    AR[j][i] * np.exp(1j * 2 * np.pi * (Q[j][i] - QQ[j][i]) * x_array)).real 
-        
-
-    matrixI[:, delta_z_index] = matrixI[:, delta_z_index] + np.trace(AR) * np.ones_like(x_array) 
-
-    return matrixI
-
 with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Image2Gauss_s15_r)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
+    parallelResult = parallel(delayed(Image2Gauss)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
 
 for mat in parallelResult:
     matrixI2 = matrixI2 + mat
 
 matrixI2 = np.abs(matrixI2)
+
 
 print('Simulation finished.')
 t_1 = time.time()
@@ -502,12 +382,11 @@ plt.plot(x_array, object_phase)
 
 # plotting the curves
 for i in range(len(delta_z_series)):
-    plt.plot(x_array, matrixI1[:, i], label = 'Single Gaussian sr')
-    plt.plot(x_array, matrixI2[:, i], label = 'Double Gaussian sr')
-    plt.plot(x_array, matrixI0[:, i], label = 'Single Gaussian')
+    plt.plot(x_array, matrixI1[:, i], label = 'Gaussian')
+    plt.plot(x_array, matrixI2[:, i], label = 'Triple Gauss')
     
     plt.xlim(-25e-9, 25e-9)
-    plt.ylim(0, 1.8)
+    #plt.ylim(0, 1.8)
     
     # naming the x axis
     plt.xlabel('Position x (m)')
@@ -515,7 +394,7 @@ for i in range(len(delta_z_series)):
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = \\frac{\pi}{2}$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' $\mu m$')
+    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = 2.61 \pi$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' $\mu m$')
     plt.legend()
     
     plt.show()
