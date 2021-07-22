@@ -336,7 +336,7 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
     for j in range(1, half_steps):
-        if matrixI[half_steps+j] < I_min:
+        if matrixI[half_steps+j] <= I_min:
             I_min = matrixI[half_steps+j]
         else:
             idx_min = half_steps+j-1
@@ -344,7 +344,7 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     
     current_min_idx = idx_min
     for j in range(1, half_steps):
-        if matrixI[current_min_idx-j] < I_min:
+        if matrixI[current_min_idx-j] <= I_min:
             I_min = matrixI[current_min_idx-j]
         else:
             idx_min = current_min_idx-j+1
@@ -353,7 +353,7 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local maximum to the right of this minimum
     I_right = matrixI[idx_min]
     for j in range(1, half_steps):
-        if matrixI[idx_min+j] > I_right:
+        if matrixI[idx_min+j] >= I_right:
             I_right = matrixI[idx_min+j]
         else:
             idx_right = idx_min+j-1
@@ -362,32 +362,17 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
     # Finding the local maximum to the left of this minimum
     I_left = matrixI[idx_min]
     for j in range(1, half_steps):
-        if matrixI[idx_min-j] > I_left:
+        if matrixI[idx_min-j] >= I_left:
             I_left = matrixI[idx_min-j]            
         else:
             idx_left = idx_min-j+1
             break
-        
-    # The dip is counted from the lower value between I_left and I_right
-    if I_left > I_right:
-        idx_left = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_right))
-        I_left = matrixI[idx_left]
-    elif I_left < I_right:
-        idx_right = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_left))
-        I_right = matrixI[idx_right]    
-        
-    # Shifting the left and right points of consideration to those of value 1
-    I_left_index = np.argmin(np.abs(matrixI[idx_left:idx_min] - 1))
-    I_left = matrixI[idx_left]
-    I_right_index = np.argmin(np.abs(matrixI[idx_min:idx_right] - 1))
-    I_right = matrixI[idx_right]
     
-    I_50left = I_min + (I_left - I_min)/2
-    I_50right = I_min + (I_right - I_min)/2
+    I_50 = (1 + I_min)/2
     
-    I_50left_index = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_50left))
+    I_50left_index = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_50))
     x_50left = x_array[I_50left_index]
-    I_50right_index = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_50right))
+    I_50right_index = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_50))
     x_50right = x_array[I_50right_index]
     resolution = x_50right - x_50left
     
