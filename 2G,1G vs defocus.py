@@ -198,11 +198,12 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
+
+delta_z_series = np.append(np.linspace(-9*1e-6, -4*1e-6, 6), np.linspace(-3.5*1e-6, 3.5*1e-6, 25))
+delta_z_series = np.append(delta_z_series, np.linspace(4*1e-6, 10*1e-6, 7))
 '''
-delta_z_series = np.append(np.linspace(-5*1e-6, -3*1e-6, 5), np.linspace(-2.5*1e-6, 2.5*1e-6, 1 + 2*25))
-delta_z_series = np.append(delta_z_series, np.linspace(3*1e-6, +5*1e-6, 5))
+delta_z_series = np.linspace(-5*1e-6, 5*1e-6, 3)
 '''
-delta_z_series = np.linspace(-5*1e-6, 5*1e-6, 5)
 
 # Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
@@ -386,7 +387,7 @@ for i in range(len(delta_z_series)):
     plt.plot(x_array, matrixI2[:, i], label = 'Triple Gauss')
     
     plt.xlim(-25e-9, 25e-9)
-    #plt.ylim(0, 1.8)
+    plt.ylim(0, 1.8)
     
     # naming the x axis
     plt.xlabel('Position x (m)')
@@ -394,8 +395,139 @@ for i in range(len(delta_z_series)):
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\\alpha_{ap} = 2.34$ mrad, $\phi = 2.61 \pi$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 3)) + ' $\mu m$')
+    plt.title('nac, E_0  = 11.5 eV, $\\alpha_{ap} = 2.34$ mrad, $\phi = 2.61 \pi$, $\Delta z$ = ' + str(round(delta_z_series[i]*1e6, 2)) + ' $\mu m$')
     plt.legend()
     
     plt.show()
 
+
+# A function returning a list of resolutions corresponding to different defocus values
+def Find_R_list(matrixI_input):
+    resolution_list = []
+    half_steps = int(simulating_steps/2)
+    
+    for i in range(len(delta_z_series)):
+        matrixI = matrixI_input[:, i]
+        if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
+            # Starting from the centre and find the local minimum to the right of the central point
+            I_min = matrixI[half_steps]
+            for j in range(1, half_steps):
+                if matrixI[half_steps+j] < I_min:
+                    I_min = matrixI[half_steps+j]
+                else:
+                    idx_min = half_steps+j-1
+                    break
+                
+            # Starting from the centre and find the local maximum to the left of the central point
+            I_max = matrixI[half_steps]
+            for j in range(1, half_steps):
+                if matrixI[half_steps-j] > I_max:
+                    I_max = matrixI[half_steps-j]            
+                else:
+                    idx_max = half_steps-j+1
+                    break
+            
+            I_100_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - 1))
+            I_100 = matrixI[I_100_index]
+            I_0_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - 1/2))
+            I_0 = matrixI[I_0_index]
+            
+            I_84 = I_0 + (I_100 - I_0)*84/100
+            I_16 = I_0 + (I_100 - I_0)*16/100
+            
+            I_84_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - I_84))
+            x_84 = x_array[I_84_index]
+            I_16_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - I_16))
+            x_16 = x_array[I_16_index]
+            resolution = x_16 - x_84
+        
+        if object_type == "Step phase object" or object_type == "Error function phase object":
+            # Finding the local minimum around the central point
+            I_min = matrixI[half_steps]
+            for j in range(1, half_steps):
+                if matrixI[half_steps+j] <= I_min:
+                    I_min = matrixI[half_steps+j]
+                else:
+                    idx_min = half_steps+j-1
+                    break
+            
+            current_min_idx = idx_min
+            for j in range(1, half_steps):
+                if matrixI[current_min_idx-j] <= I_min:
+                    I_min = matrixI[current_min_idx-j]
+                else:
+                    idx_min = current_min_idx-j+1
+                    break
+            
+            # Finding the local maximum to the right of this minimum
+            I_right = matrixI[idx_min]
+            for j in range(1, half_steps):
+                if matrixI[idx_min+j] >= I_right:
+                    I_right = matrixI[idx_min+j]
+                else:
+                    idx_right = idx_min+j-1
+                    break
+                
+            # Finding the local maximum to the left of this minimum
+            I_left = matrixI[idx_min]
+            for j in range(1, half_steps):
+                if matrixI[idx_min-j] >= I_left:
+                    I_left = matrixI[idx_min-j]            
+                else:
+                    idx_left = idx_min-j+1
+                    break
+            
+            I_50 = (1 + I_min)/2
+            
+            I_50left_index = idx_left + np.argmin(np.abs(matrixI[idx_left:idx_min] - I_50))
+            x_50left = x_array[I_50left_index]
+            I_50right_index = idx_min + np.argmin(np.abs(matrixI[idx_min:idx_right] - I_50))
+            x_50right = x_array[I_50right_index]
+            resolution = x_50right - x_50left
+            
+        resolution_list.append(resolution)
+        
+    return resolution_list
+
+resolution_list1 = Find_R_list(matrixI1)
+resolution_list2 = Find_R_list(matrixI2)
+    
+plt.plot(delta_z_series*1e6, resolution_list1, label = 'Gaussian')
+plt.plot(delta_z_series*1e6, resolution_list2, label = 'Triple Gaussian')
+
+# naming the x axis
+plt.xlabel('Defocus ($\mu m$)')
+# naming the y axis
+plt.ylabel('Resolution (nm)')
+plt.legend()
+
+plt.show()
+
+'''
+# Save this list of resolution into a csv file
+if LEEM_type == 'IBM':
+    if aberration_corrected == False:
+        filename = object_type + ' IBM_nac.csv' 
+    if aberration_corrected == True:
+        filename = object_type + ' IBM_ac.csv'       
+if LEEM_type == 'Energy dependent':
+    if aberration_corrected == False:
+        filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
+    if aberration_corrected == True:
+        filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
+
+with open(filename, 'w') as csvfile:
+    writer = csv.writer(csvfile, delimiter=',')
+    writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
+    
+    for i in range(len(x_array)):
+        writer.writerow([round(1e9 * x_array[i], 5), round(matrixI[i], 10)])
+ 
+    csvfile.close()
+
+'''
+
+
+################################
+###### End of Programme ########
+################################
