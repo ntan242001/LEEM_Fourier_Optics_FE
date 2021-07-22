@@ -181,7 +181,7 @@ def create_object(object_type_str, k = 1):
 
 choose_LEEM_type("IBM", aberration_corrected_bool = False)
 choose_defocus("In-focus")
-create_object("Step phase object", k = 1)
+create_object("Step amplitude object", k = 1)
 
 ##################################
 ######## End of Preamble #########
@@ -292,8 +292,8 @@ plt.show()
 
 
 ######## Calculating the resolution for the object ########
+half_steps = int(simulating_steps/2)
 if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
-    half_steps = int(simulating_steps/2)
     # Starting from the centre and find the local minimum to the right of the central point
     I_min = matrixI[half_steps]
     for j in range(1, half_steps):
@@ -311,29 +311,23 @@ if object_type == "Step amplitude object" or object_type == "Error function ampl
         else:
             idx_max = half_steps-j+1
             break
-        
     
-    # The region of interest to find the resolution
-    x_array_focus = x_array[idx_max:idx_min]
-    matrixI_focus = matrixI[idx_max:idx_min]
-    
-    I_100_index = np.argmin(np.abs(matrixI_focus - 1))
-    I_100 = matrixI_focus[I_100_index]
-    I_0_index = np.argmin(np.abs(matrixI_focus - 1/2))
-    I_0 = matrixI_focus[I_0_index]
+    I_100_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - 1))
+    I_100 = matrixI[I_100_index]
+    I_0_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - 1/2))
+    I_0 = matrixI[I_0_index]
     
     I_84 = I_0 + (I_100 - I_0)*84/100
     I_16 = I_0 + (I_100 - I_0)*16/100
     
-    I_84_index = np.argmin(np.abs(matrixI_focus - I_84))
-    x_84 = x_array_focus[I_84_index]
-    I_16_index = np.argmin(np.abs(matrixI_focus - I_16))
-    x_16 = x_array_focus[I_16_index]
+    I_84_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - I_84))
+    x_84 = x_array[I_84_index]
+    I_16_index = idx_max + np.argmin(np.abs(matrixI[idx_max:idx_min] - I_16))
+    x_16 = x_array[I_16_index]
     resolution = x_16 - x_84
 
 if object_type == "Step phase object" or object_type == "Error function phase object":
     # Finding the local minimum around the central point
-    half_steps = int(simulating_steps/2)
     I_min = matrixI[half_steps]
     for j in range(1, half_steps):
         if matrixI[half_steps+j] <= I_min:
