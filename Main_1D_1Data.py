@@ -174,14 +174,27 @@ def create_object(object_type_str, k = 1):
         
         for counter, element in enumerate(x_array):
             object_phase[counter] = (math.erf(element*1e8)+1)/2*k*np.pi
-
+            
+    if object_type == "Custom":
+        # Creating a k.pi step phase object whose amplitude is uniformly set to C      
+        object_amplitude = np.ones_like(x_array)
+        
+        object_phase = np.zeros_like(x_array)
+        
+        C = 0.9
+        
+        for counter, element in enumerate(x_array):
+            if element > 0:
+                object_phase[counter] = k * np.pi
+                object_amplitude[counter] = C
+            
     # Object function
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
 choose_LEEM_type("IBM", aberration_corrected_bool = False)
 choose_defocus("In-focus")
-create_object("Step amplitude object", k = 1)
+create_object("Step phase object", k = 1)
 
 ##################################
 ######## End of Preamble #########
@@ -373,8 +386,10 @@ if object_type == "Step phase object" or object_type == "Error function phase ob
 
 print("Resolution: R = " + str(round(resolution*1e9, 4)) + " nm")
 
-'''
-# Save this list of resolution into a csv file
+
+
+
+# Save the list of I(x) into a csv file
 if LEEM_type == 'IBM':
     if aberration_corrected == False:
         filename = object_type + ' IBM_nac.csv' 
@@ -385,7 +400,6 @@ if LEEM_type == 'Energy dependent':
         filename = object_type + ' nac_LEEM_E0=' + str(E_0) + '.csv'
     if aberration_corrected == True:
         filename = object_type + ' ac_LEEM_E0=' + str(E_0) + '.csv'
-
 with open(filename, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['x (nm)', 'Intensity', 'object type = ' + object_type])
@@ -395,7 +409,6 @@ with open(filename, 'w') as csvfile:
  
     csvfile.close()
 
-'''
 
 
 ################################
