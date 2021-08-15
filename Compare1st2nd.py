@@ -372,7 +372,7 @@ for i in range(len(alpha_ill_series)):
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('$\Delta z = 0$, $\phi = \pi$, $\\alpha_{ap}$ = ' + str(round(alpha_ill_series[i]*1e3, 3)) + ' mrad')
+    plt.title('$\Delta z = 0$, $\phi = \pi$, $\\alpha_{ill}$ = ' + str(round(alpha_ill_series[i]*1e3, 3)) + ' mrad')
     plt.legend()
     
     plt.show()
