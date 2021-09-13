@@ -254,6 +254,30 @@ E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
 # The purely chromatic envelop functions
 E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
 E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
+
+'''FN
+R_0 = np.exp(1j*2*np.pi*(C_3*lamda**3 * (Q**4 - QQ**4)/4 + C_5*lamda**5 *(
+        Q**6 - QQ**6)/6 - delta_z*lamda*(Q**2 - QQ**2)/2))
+
+delta_E = 0.455 # eV
+sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
+sigma_ill = q_ill/(2*np.sqrt(2*np.log(2)))
+epsilon_0 = - 0.06033 - 0.15 # eV
+
+a_1 = C_3*lamda**3 *(Q**3 - QQ**3) + C_5*lamda**5 * (Q**5 - QQ**5) - delta_z*lamda*(Q - QQ)
+
+b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
+b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
+b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
+
+# The envelop function by source extension
+E_s = np.exp(-2*np.pi**2 *sigma_ill**2 *a_1**2)
+
+# The purely chromatic envelop functions
+E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
+E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E**2))
+
+'''
 '''
 AR = np.multiply(np.multiply(np.multiply(np.multiply(F_obj_q, F_obj_qq), R_0), E_s), E_ct)
 for i in range(len(q)):
