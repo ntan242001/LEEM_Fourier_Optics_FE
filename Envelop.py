@@ -125,7 +125,7 @@ def choose_defocus(defocus_type, value = 0):
 
 
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**15    # total simulating steps
+simulating_steps = 1 + 2**10   # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -291,8 +291,8 @@ plt.plot(x_array, object_phase)
 '''
 
 ########## Plotting the curve ############
-plt.plot(q/(1e9), E_ct[len(q)/2,:].real, label = 'Re($E_{C,tot}(q,0)$)')
-plt.plot(q/(1e9), E_ct[len(q)/2,:].imag, label = 'Im($E_{C,tot}(q,0)$)')
+plt.plot(q/(1e9), E_ct[int(len(q)/2),:].real, label = 'Re($E_{C,tot}(q,0)$)')
+plt.plot(q/(1e9), E_ct[int(len(q)/2),:].imag, label = 'Im($E_{C,tot}(q,0)$)')
 
 #plt.xlim(-1, 1)
 # naming the x axis
@@ -302,6 +302,7 @@ plt.ylabel('$E_{C,tot}(q,0)$')
   
 # giving a title to my graph
 plt.title('The chromatic envelop function for Gaussian energy spread')
+plt.legend()
 
 plt.show()
 
