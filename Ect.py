@@ -279,10 +279,11 @@ E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
 
 E_ct_array = []
 
-epsilon_0_array = np.linspace(-0.5, 0.5, 11)
-epsilon_0_array = list(epsilon_0_array)
+#epsilon_0_array = np.linspace(-0.5, 0.5, 11)
+epsilon_0_array = [-0.5, -0.4, -0.3, -0.2, -0.1,  0. ,  0.1,  0.2,  0.3,  0.4,  0.5]
 
-for epsilon_0 in epsilon_0_array:
+for i in range(len(epsilon_0_array)):
+    epsilon_0 = epsilon_0_array[i]
     b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
     E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2) * np.exp(- epsilon_0**2/(2*sigma_E**2))
     E_ct_array.append(E_ct)
@@ -324,7 +325,8 @@ print('Total time: ' + str(round(t_1-t_0, 3)) + ' seconds')
 plt.plot(x_array, object_amplitude)
 plt.plot(x_array, object_phase)
 '''
-for epsilon_0 in epsilon_0_array:
+for i in range(len(epsilon_0_array)):
+    epsilon_0 = epsilon_0_array[i]
     ########## Plotting the curves ############
     plt.plot(q/(1e9), E_ct[int(len(q)/2),:].real, label = 'Re($E_{C,tot}(q,0)$)')
     plt.plot(q/(1e9), E_ct[int(len(q)/2),:].imag, label = 'Im($E_{C,tot}(q,0)$)')
@@ -336,7 +338,7 @@ for epsilon_0 in epsilon_0_array:
     plt.ylabel('$E_{C,tot}(q,0)$')
       
     # giving a title to my graph
-    plt.title('Ect for shifted Gaussian, e_0 =', epsilon_0)
+    plt.title('Ect for shifted Gaussian, e_0 =' + str(epsilon_0))
     plt.legend()
     
     plt.show()
