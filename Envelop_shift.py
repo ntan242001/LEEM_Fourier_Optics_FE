@@ -132,7 +132,7 @@ x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object
 
 
 
-choose_LEEM_type("IBM", aberration_corrected_bool = False)
+choose_LEEM_type("IBM", aberration_corrected_bool = True)
 choose_defocus("In-focus")
 
 ##################################
@@ -172,28 +172,24 @@ for i in range(len(epsilon_0_series)):
     E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
     E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2)*np.exp(- epsilon_0**2/(2*sigma_E**2))
 
-# with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-#     parallelResult = parallel(delayed(Envelop1Gauss)(epsilon_0, epsilon_0_index) for epsilon_0, epsilon_0_index in enumerate(epsilon_0_series))
-
-# for mat in parallelResult:
-#     matrixE_ct = np.append(matrixE_ct, mat)
-
-# for i in range(len(epsilon_0_series)):
     E_ctot = E_ct[int(len(q)/2),:]
 
     plt.plot(q/(1e9), E_ctot.real, label = 'Re($E_{C,tot}(q,0)$)')
     plt.plot(q/(1e9), E_ctot.imag, label = 'Im($E_{C,tot}(q,0)$)')
     
-    plt.ylim(-0.9, 1.1)
-    plt.xlim(-0.7, 0.7)
+    plt.ylim(-0.25, 0.25)
+    plt.xlim(-0.5, 0.5)
     # naming the x axis
     plt.xlabel('q($nm^{-1}$)')
     # naming the y axis
     plt.ylabel('$E_{C,tot}(q,0)$')
+    plt.axvline(x=q_ap/1e9, color='k', linestyle='--', label = "$Cutoff q_{ap}$")
+    plt.axvline(x=-q_ap/1e9, color='k', linestyle='--')
+    
       
     # giving a title to my graph
     plt.title('$E_{ct,tot}(q,0)$ versus q, $\epsilon_0$ = ' + str(round(epsilon_0_series[i], 2)) + "eV")
-    plt.legend()
+    plt.legend(bbox_to_anchor =(1.35, 1), ncol = 1)
     
     plt.show()
 
