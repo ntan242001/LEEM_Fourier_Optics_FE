@@ -126,7 +126,7 @@ def choose_defocus(defocus_type, value = 0):
 
 
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**13 # total simulating steps
+simulating_steps = 1 + 2**11 # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -149,45 +149,42 @@ print("Simulation start.")
 # # The object image is reversed through the lens
 # object_function_reversed = object_function[::-1] 
 
-epsilon_0_series = np.linspace(-0.5, -0.5, 11)
-
-# Initialising the series of function I_1(x) and I_2(x) at different values of q_ap
-matrixE_ct = np.zeros((len(x_array), len(epsilon_0_series)), dtype=complex)
+epsilon_0_series = np.linspace(-0.3, 0.3, 31)
 
 q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
 
 # Shifting the q array to centre at 0 
 q = q - np.max(q) / 2
+# Arrays for the calculation of the double integration 
+Q, QQ = np.meshgrid(q, q)
 
 # A function to calculate the image for single Gaussian distribution
-def Envelop1Gauss(epsilon_0, epsilon_0_index):
-    # Arrays for the calculation of the double integration 
-    Q, QQ = np.meshgrid(q, q)
-    
+for i in range(len(epsilon_0_series)):
+    epsilon_0 = epsilon_0_series[i]
     delta_E = 0.2424 # eV
     sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
     b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
     b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
     
+    b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
+    
     # The purely chromatic envelop functions
     E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
-    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1**2)
-    
-    return E_ct[int(len(q)/2),:]
+    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2)*np.exp(- epsilon_0**2/(2*sigma_E**2))
 
-with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(Envelop1Gauss)(epsilon_0, epsilon_0_index) for epsilon_0, epsilon_0_index in enumerate(epsilon_0_series))
+# with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
+#     parallelResult = parallel(delayed(Envelop1Gauss)(epsilon_0, epsilon_0_index) for epsilon_0, epsilon_0_index in enumerate(epsilon_0_series))
 
-for mat in parallelResult:
-    matrixE_ct = np.hstack(matrixE_ct, mat)
+# for mat in parallelResult:
+#     matrixE_ct = np.append(matrixE_ct, mat)
 
-for i in range(len(epsilon_0_series)):
-    E_ctot = matrixE_ct[:,i]
+# for i in range(len(epsilon_0_series)):
+    E_ctot = E_ct[int(len(q)/2),:]
 
     plt.plot(q/(1e9), E_ctot.real, label = 'Re($E_{C,tot}(q,0)$)')
     plt.plot(q/(1e9), E_ctot.imag, label = 'Im($E_{C,tot}(q,0)$)')
     
-    
+    plt.ylim(-0.9, 1.1)
     plt.xlim(-0.7, 0.7)
     # naming the x axis
     plt.xlabel('q($nm^{-1}$)')
@@ -195,7 +192,7 @@ for i in range(len(epsilon_0_series)):
     plt.ylabel('$E_{C,tot}(q,0)$')
       
     # giving a title to my graph
-    plt.title('$$E_{ct,tot}(q,0)$ versus q, epsilon_0 = ' + str(epsilon_0_series[i]) )
+    plt.title('$E_{ct,tot}(q,0)$ versus q, $\epsilon_0$ = ' + str(round(epsilon_0_series[i], 2)) + "eV")
     plt.legend()
     
     plt.show()
