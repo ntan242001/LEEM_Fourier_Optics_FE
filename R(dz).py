@@ -134,7 +134,7 @@ def choose_defocus(defocus_type, value = 0):
 
 
 object_size = 400               # simulating object size in nm
-simulating_steps = 1 + 2**15    # total simulating steps
+simulating_steps = 1 + 2**13    # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
@@ -194,7 +194,7 @@ def create_object(object_type_str, k = 1):
 # In[5]:
 
 
-choose_LEEM_type("Energy dependent", aberration_corrected_bool = False)
+choose_LEEM_type("Energy dependent", aberration_corrected_bool = True)
 create_object("Step phase object", k = 1)
 
 
@@ -581,8 +581,8 @@ with open(filename1, 'w') as csvfile:
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
     for i in range(len(x_array)):
-        writer.writerow([round(1e6 * delta_z_series[i], 5), round(matrixI1[i], 10)])
- 
+        writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list1[i], 10)])
+
     csvfile.close()
 
 filename2 = 'R(dz) FN spread ' + filename
@@ -591,7 +591,7 @@ with open(filename2, 'w') as csvfile:
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
     for i in range(len(x_array)):
-        writer.writerow([round(1e6 * delta_z_series[i], 5), round(matrixI2[i], 10)])
+        writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list2[i], 10)])
  
     csvfile.close()
     
@@ -601,7 +601,7 @@ with open(filename3, 'w') as csvfile:
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
     for i in range(len(x_array)):
-        writer.writerow([round(1e6 * delta_z_series[i], 5), round(matrixI3[i], 10)])
+        writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list3[i], 10)])
  
     csvfile.close()
 
