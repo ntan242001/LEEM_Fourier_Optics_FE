@@ -580,7 +580,7 @@ with open(filename1, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
-    for i in range(len(x_array)):
+    for i in range(len(delta_z_series)):
         writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list1[i], 10)])
 
     csvfile.close()
@@ -590,7 +590,7 @@ with open(filename2, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
-    for i in range(len(x_array)):
+    for i in range(len(delta_z_series)):
         writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list2[i], 10)])
  
     csvfile.close()
@@ -600,14 +600,11 @@ with open(filename3, 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Delta z (mu m)', 'Resolution'])
     
-    for i in range(len(x_array)):
+    for i in range(len(delta_z_series)):
         writer.writerow([round(1e6 * delta_z_series[i], 5), round(resolution_list3[i], 10)])
  
     csvfile.close()
 
 
 # In[ ]:
-
-
-
 
