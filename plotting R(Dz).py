@@ -11,10 +11,11 @@ C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coef
 
 lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
 
-delta_z_series = []
+delta_z_series1 = []
+
 resolution_list1 = []
 
-with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
+with open('R(dz) Gaussian spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -24,13 +25,15 @@ with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
             if row == []:
                 continue
             else:
-                delta_z_series.append(float(row[0]))
+                delta_z_series1.append(float(row[0])*1e-6)
                 resolution_list1.append(float(row[1]))    
     csvfile.close()
     
+delta_z_series2 = []
+
 resolution_list2 = []
 
-with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
+with open('R(dz) FN spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -40,13 +43,14 @@ with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
             if row == []:
                 continue
             else:
-                delta_z_series.append(float(row[0]))
+                delta_z_series2.append(float(row[0])*1e-6)
                 resolution_list2.append(float(row[1]))    
     csvfile.close()
     
+delta_z_series3 = []
 resolution_list3 = []
 
-with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
+with open('R(dz) Gauss G1 spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -56,45 +60,82 @@ with open('resolution_aperture_IBMnac.csv', 'r') as csvfile:
             if row == []:
                 continue
             else:
-                delta_z_series.append(float(row[0]))
+                delta_z_series3.append(float(row[0])*1e-6)
                 resolution_list3.append(float(row[1]))    
     csvfile.close()
+  
+delta_z_series4 = []
+resolution_list4 = []
+
+with open('R(dz) Gaussian spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                delta_z_series4.append(float(row[0])*1e-6)
+                resolution_list4.append(float(row[1]))    
+    csvfile.close()
     
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list1, label = 'Gaussian')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list2, label = 'FN (Triple Gaussian)')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list3, label = '1 of Triple Gaussian')
+    
+delta_z_series5 = []
+resolution_list5 = []
 
-plt.xlim(-5.5,6)
-plt.ylim(0,)
+with open('R(dz) FN spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                delta_z_series5.append(float(row[0])*1e-6)
+                resolution_list5.append(float(row[1]))    
+    csvfile.close()
+    
+    
+delta_z_series6 = []
+resolution_list6 = []
 
-# naming the x axis
-plt.xlabel('$\\frac{\Delta z}{(C_3 \lambda)^{1/2}}$', fontsize=18)
-# naming the y axis
-plt.ylabel('Resolution (nm)', fontsize=12)
-plt.legend(bbox_to_anchor=(1, 1))
+with open('R(dz) Gauss G1 spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+    csv_reader = csv.reader(csvfile, delimiter=',')
+    line_count = 0
+    for row in csv_reader:
+        if line_count == 0:
+            line_count += 1
+        else:
+            if row == []:
+                continue
+            else:
+                delta_z_series6.append(float(row[0])*1e-6)
+                resolution_list6.append(float(row[1]))    
+    csvfile.close()
+    
+plt.plot(delta_z_series1/(C_5*lamda**2)**(1/3), resolution_list1, label = 'nac Gaussian')
+plt.plot(delta_z_series2/(C_5*lamda**2)**(1/3), resolution_list2, label = 'nac FN (Triple Gaussian)')
+plt.plot(delta_z_series3/(C_5*lamda**2)**(1/3), resolution_list3, label = 'nac 1 of Triple Gaussian')
 
-plt.show()
+plt.plot(delta_z_series4/(C_5*lamda**2)**(1/3), resolution_list4, label = 'ac Gaussian')
+plt.plot(delta_z_series5/(C_5*lamda**2)**(1/3), resolution_list5, label = 'ac FN (Triple Gaussian)')
+plt.plot(delta_z_series6/(C_5*lamda**2)**(1/3), resolution_list6, label = 'ac 1 of Triple Gaussian')
 
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list1, label = 'Gaussian')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list2, label = 'FN (Triple Gaussian)')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list3, label = '1 of Triple Gaussian')
+# plt.plot(delta_z_series1/(C_3*lamda)**(1/2), resolution_list1, label = 'nac Gaussian')
+# plt.plot(delta_z_series2/(C_3*lamda)**(1/2), resolution_list2, label = 'nac FN (Triple Gaussian)')
+# plt.plot(delta_z_series3/(C_3*lamda)**(1/2), resolution_list3, label = 'nac 1 of Triple Gaussian')
 
-plt.xlim(-5.5,6)
-plt.ylim(0,)
+# plt.plot(delta_z_series4/(C_3*lamda)**(1/2), resolution_list4, label = 'ac Gaussian')
+# plt.plot(delta_z_series5/(C_3*lamda)**(1/2), resolution_list5, label = 'ac FN (Triple Gaussian)')
+# plt.plot(delta_z_series6/(C_3*lamda)**(1/2), resolution_list6, label = 'ac 1 of Triple Gaussian')
 
-# naming the x axis
-plt.xlabel('$\\frac{\Delta z}{(C_3 \lambda)^{1/2}}$', fontsize=18)
-# naming the y axis
-plt.ylabel('Resolution (nm)', fontsize=12)
-plt.legend(bbox_to_anchor=(1, 1))
 
-plt.show()
 
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list1, label = 'Gaussian')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list2, label = 'FN (Triple Gaussian)')
-plt.plot(delta_z_series/(C_3*lamda)**(1/2), resolution_list3, label = '1 of Triple Gaussian')
-
-plt.xlim(-5.5,6)
+plt.xlim(-10,10)
 plt.ylim(0,)
 
 # naming the x axis
