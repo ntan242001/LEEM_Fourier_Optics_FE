@@ -15,7 +15,7 @@ delta_z_series1 = []
 
 resolution_list1 = []
 
-with open('R(dz) Gaussian spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) Gaussian spread Step amplitude object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -33,7 +33,7 @@ delta_z_series2 = []
 
 resolution_list2 = []
 
-with open('R(dz) FN spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) FN spread Step amplitude object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -50,7 +50,7 @@ with open('R(dz) FN spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvf
 delta_z_series3 = []
 resolution_list3 = []
 
-with open('R(dz) Gauss G1 spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) Gauss G1 spread Step amplitude object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -67,7 +67,7 @@ with open('R(dz) Gauss G1 spread Step phase object nac_LEEM_E0=11.5.csv', 'r') a
 delta_z_series4 = []
 resolution_list4 = []
 
-with open('R(dz) Gaussian spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) Gaussian spread Step amplitude object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -85,7 +85,7 @@ with open('R(dz) Gaussian spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as
 delta_z_series5 = []
 resolution_list5 = []
 
-with open('R(dz) FN spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) FN spread Step amplitude object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -103,7 +103,7 @@ with open('R(dz) FN spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfi
 delta_z_series6 = []
 resolution_list6 = []
 
-with open('R(dz) Gauss G1 spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
+with open('R(dz) Gauss G1 spread Step amplitude object ac_LEEM_E0=11.5.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -117,21 +117,21 @@ with open('R(dz) Gauss G1 spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as
                 resolution_list6.append(float(row[1]))    
     csvfile.close()
     
-plt.plot(delta_z_series1/(C_5*lamda**2)**(1/3), resolution_list1, label = 'nac Gaussian')
-plt.plot(delta_z_series2/(C_5*lamda**2)**(1/3), resolution_list2, label = 'nac FN (Triple Gaussian)')
-plt.plot(delta_z_series3/(C_5*lamda**2)**(1/3), resolution_list3, label = 'nac 1 of Triple Gaussian')
+# plt.plot(delta_z_series1/(C_5*lamda**2)**(1/3), resolution_list1, label = 'nac Gaussian')
+# plt.plot(delta_z_series2/(C_5*lamda**2)**(1/3), resolution_list2, label = 'nac FN (Triple Gaussian)')
+# plt.plot(delta_z_series3/(C_5*lamda**2)**(1/3), resolution_list3, label = 'nac 1 of Triple Gaussian')
 
-plt.plot(delta_z_series4/(C_5*lamda**2)**(1/3), resolution_list4, label = 'ac Gaussian')
-plt.plot(delta_z_series5/(C_5*lamda**2)**(1/3), resolution_list5, label = 'ac FN (Triple Gaussian)')
-plt.plot(delta_z_series6/(C_5*lamda**2)**(1/3), resolution_list6, label = 'ac 1 of Triple Gaussian')
+# plt.plot(delta_z_series4/(C_5*lamda**2)**(1/3), resolution_list4, label = 'ac Gaussian')
+# plt.plot(delta_z_series5/(C_5*lamda**2)**(1/3), resolution_list5, label = 'ac FN (Triple Gaussian)')
+# plt.plot(delta_z_series6/(C_5*lamda**2)**(1/3), resolution_list6, label = 'ac 1 of Triple Gaussian')
 
-# plt.plot(delta_z_series1/(C_3*lamda)**(1/2), resolution_list1, label = 'nac Gaussian')
-# plt.plot(delta_z_series2/(C_3*lamda)**(1/2), resolution_list2, label = 'nac FN (Triple Gaussian)')
-# plt.plot(delta_z_series3/(C_3*lamda)**(1/2), resolution_list3, label = 'nac 1 of Triple Gaussian')
+plt.plot(delta_z_series1/(C_3*lamda)**(1/2), resolution_list1, label = 'nac Gaussian')
+plt.plot(delta_z_series2/(C_3*lamda)**(1/2), resolution_list2, label = 'nac FN (Triple Gaussian)')
+plt.plot(delta_z_series3/(C_3*lamda)**(1/2), resolution_list3, label = 'nac 1 of Triple Gaussian')
 
-# plt.plot(delta_z_series4/(C_3*lamda)**(1/2), resolution_list4, label = 'ac Gaussian')
-# plt.plot(delta_z_series5/(C_3*lamda)**(1/2), resolution_list5, label = 'ac FN (Triple Gaussian)')
-# plt.plot(delta_z_series6/(C_3*lamda)**(1/2), resolution_list6, label = 'ac 1 of Triple Gaussian')
+plt.plot(delta_z_series4/(C_3*lamda)**(1/2), resolution_list4, label = 'ac Gaussian')
+plt.plot(delta_z_series5/(C_3*lamda)**(1/2), resolution_list5, label = 'ac FN (Triple Gaussian)')
+plt.plot(delta_z_series6/(C_3*lamda)**(1/2), resolution_list6, label = 'ac 1 of Triple Gaussian')
 
 
 
