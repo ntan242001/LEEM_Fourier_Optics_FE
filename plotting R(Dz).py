@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import csv
 
-xticks = np.linspace(-5,5,11)
+xticks = np.linspace(-1.5,1.5,7)
 xticks = np.rint(xticks)
 xticks = list(xticks)
 
@@ -19,54 +19,54 @@ delta_z_series1 = []
 
 resolution_list1 = []
 
-with open('R(dz) Gaussian spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            line_count += 1
-        else:
-            if row == []:
-                continue
-            else:
-                delta_z_series1.append(float(row[0])*1e-6)
-                resolution_list1.append(float(row[1]))    
-    csvfile.close()
+# with open('R(dz) Gaussian spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+#     csv_reader = csv.reader(csvfile, delimiter=',')
+#     line_count = 0
+#     for row in csv_reader:
+#         if line_count == 0:
+#             line_count += 1
+#         else:
+#             if row == []:
+#                 continue
+#             else:
+#                 delta_z_series1.append(float(row[0])*1e-6)
+#                 resolution_list1.append(float(row[1]))    
+#     csvfile.close()
     
-delta_z_series2 = []
+# delta_z_series2 = []
 
-resolution_list2 = []
+# resolution_list2 = []
 
-with open('R(dz) FN spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            line_count += 1
-        else:
-            if row == []:
-                continue
-            else:
-                delta_z_series2.append(float(row[0])*1e-6)
-                resolution_list2.append(float(row[1]))    
-    csvfile.close()
+# with open('R(dz) FN spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+#     csv_reader = csv.reader(csvfile, delimiter=',')
+#     line_count = 0
+#     for row in csv_reader:
+#         if line_count == 0:
+#             line_count += 1
+#         else:
+#             if row == []:
+#                 continue
+#             else:
+#                 delta_z_series2.append(float(row[0])*1e-6)
+#                 resolution_list2.append(float(row[1]))    
+#     csvfile.close()
     
-delta_z_series3 = []
-resolution_list3 = []
+# delta_z_series3 = []
+# resolution_list3 = []
 
-with open('R(dz) Gauss G1 spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            line_count += 1
-        else:
-            if row == []:
-                continue
-            else:
-                delta_z_series3.append(float(row[0])*1e-6)
-                resolution_list3.append(float(row[1]))    
-    csvfile.close()
+# with open('R(dz) Gauss G1 spread Step phase object nac_LEEM_E0=11.5.csv', 'r') as csvfile:
+#     csv_reader = csv.reader(csvfile, delimiter=',')
+#     line_count = 0
+#     for row in csv_reader:
+#         if line_count == 0:
+#             line_count += 1
+#         else:
+#             if row == []:
+#                 continue
+#             else:
+#                 delta_z_series3.append(float(row[0])*1e-6)
+#                 resolution_list3.append(float(row[1]))    
+#     csvfile.close()
   
 delta_z_series4 = []
 resolution_list4 = []
@@ -125,21 +125,20 @@ with open('R(dz) Gauss G1 spread Step phase object ac_LEEM_E0=11.5.csv', 'r') as
 # plt.plot(delta_z_series2/(C_5*lamda**2)**(1/3), resolution_list2, label = 'FN')
 # plt.plot(delta_z_series3/(C_5*lamda**2)**(1/3), resolution_list3, label = 'G1')
 
-# plt.plot(delta_z_series4/(C_5*lamda**2)**(1/3), resolution_list4, label = 'Gaussian')
-# plt.plot(delta_z_series5/(C_5*lamda**2)**(1/3), resolution_list5, label = 'FN')
-# plt.plot(delta_z_series6/(C_5*lamda**2)**(1/3), resolution_list6, label = 'G1')
+# plt.plot(delta_z_series4/(C_5*lamda**2)**(1/3), resolution_list4, label = 'acGaussian')
+# plt.plot(delta_z_series5/(C_5*lamda**2)**(1/3), resolution_list5, label = 'acFN')
+# plt.plot(delta_z_series6/(C_5*lamda**2)**(1/3), resolution_list6, label = 'acG1')
 
-plt.plot(delta_z_series1/(C_3*lamda)**(1/2), resolution_list1, label = 'Gaussian')
-plt.plot(delta_z_series2/(C_3*lamda)**(1/2), resolution_list2, label = 'FN')
-plt.plot(delta_z_series3/(C_3*lamda)**(1/2), resolution_list3, label = 'G1')
+# plt.plot(delta_z_series1/(C_3*lamda)**(1/2), resolution_list1, label = 'Gaussian')
+# plt.plot(delta_z_series2/(C_3*lamda)**(1/2), resolution_list2, label = 'FN')
+# plt.plot(delta_z_series3/(C_3*lamda)**(1/2), resolution_list3, label = 'G1')
 
-# plt.plot(delta_z_series4/(C_3*lamda)**(1/2), resolution_list4, label = 'Gaussian')
-# plt.plot(delta_z_series5/(C_3*lamda)**(1/2), resolution_list5, label = 'FN')
-# plt.plot(delta_z_series6/(C_3*lamda)**(1/2), resolution_list6, label = 'G1')
+plt.plot(delta_z_series4/(C_3*lamda)**(1/2), resolution_list4, label = 'acGaussian')
+plt.plot(delta_z_series5/(C_3*lamda)**(1/2), resolution_list5, label = 'acFN')
+plt.plot(delta_z_series6/(C_3*lamda)**(1/2), resolution_list6, label = 'acG1')
 
 
 
-#plt.xlim(-10,10)
 plt.ylim(0,)
 plt.xticks(list(xticks))
 
