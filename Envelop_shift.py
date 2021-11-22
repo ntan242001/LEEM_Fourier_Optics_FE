@@ -132,7 +132,7 @@ x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object
 
 
 
-choose_LEEM_type("IBM", aberration_corrected_bool = True)
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
 choose_defocus("In-focus")
 
 ##################################
@@ -149,7 +149,7 @@ print("Simulation start.")
 # # The object image is reversed through the lens
 # object_function_reversed = object_function[::-1] 
 
-epsilon_0_series = np.linspace(-0.3, 0.3, 31)
+epsilon_0_series = np.linspace(0.0008694, 0.0008694, 1)
 
 q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
 
@@ -185,6 +185,7 @@ for i in range(len(epsilon_0_series)):
     plt.ylabel('$E_{C,tot}(q,0)$')
     plt.axvline(x=q_ap/1e9, color='k', linestyle='--', label = "$Cutoff q_{ap}$")
     plt.axvline(x=-q_ap/1e9, color='k', linestyle='--')
+    plt.axhline(y=0, color='k', linestyle='--')
     
       
     # giving a title to my graph
