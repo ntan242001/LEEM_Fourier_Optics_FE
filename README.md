@@ -31,7 +31,7 @@ The programme "Double Gaussian.py" (currently in the branch Double-Gaussian) con
 For contribution request, please email the author at xtnguyenaa@connect.ust.hk.
 
 ## Authors and acknowledgement
-This is part of the UROP project on LEEM Fourier Optics at HKUST in summer 2021 of the author under the supervision of professor M.S. Altman. 
+This is part of the UROP project on LEEM Fourier Optics at HKUST of the author under the supervision of professor M.S. Altman. 
 
 ## Project status
 Active
