@@ -1,9 +1,9 @@
 # Comparing the single and double Gaussian distributions for different aperture angles
 import numpy as np
 import matplotlib.pyplot as plt
-from joblib import Parallel, delayed
+#from joblib import Parallel, delayed
 import time
-import math
+#import math
 
 ##############################
 ######### Preamble ###########
@@ -30,7 +30,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
             
             alpha_ap = 2.34e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
             
             delta_E = 0.25  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
@@ -48,7 +48,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 92.8
         
             alpha_ap = 7.37e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
         
             delta_E = 0.25  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
@@ -63,7 +63,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
     elif LEEM_type == "Energy dependent":
         if aberration_corrected == False:
             E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
+            E_0 = 10 # eV  Energy at the sample ##########CUSTOMIZABLE INPUT##########
             kappa = np.sqrt(E/E_0)
             
             C_c = -0.0121 * kappa**(1/2) + 0.0029 # m  Second Rank Chromatic Aberration Coefficient
@@ -74,7 +74,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -84,7 +84,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             
         if aberration_corrected == True:
             E = 15010  # eV  Nominal Energy After Acceleration
-            E_0 = 20 # eV  Energy at the sample
+            E_0 = 10 # eV  Energy at the sample
             kappa = np.sqrt(E/E_0)
             
             C_c = 0 # m  Second Rank Chromatic Aberration Coefficient
@@ -95,7 +95,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.25  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -125,14 +125,14 @@ def choose_defocus(defocus_type, value = 0):
         delta_z = value
 
 
-object_size = 400               # simulating object size in nm
+object_size = 400            # simulating object size in nm
 simulating_steps = 1 + 2**11 # total simulating steps
 # An array of points in the x space
 x_array = (np.linspace(-object_size/2, object_size/2, simulating_steps) + object_size/simulating_steps)*1e-9
 
 
 
-choose_LEEM_type("IBM", aberration_corrected_bool = False)
+choose_LEEM_type("IBM", aberration_corrected_bool = True)
 choose_defocus("In-focus")
 
 ##################################
@@ -149,7 +149,8 @@ print("Simulation start.")
 # # The object image is reversed through the lens
 # object_function_reversed = object_function[::-1] 
 
-epsilon_0_series = np.linspace(0.0008694, 0.0008694, 1)
+#epsilon_0_series = np.linspace(0.0008694, 0.0008694, 1)
+epsilon_0_series = np.array([-0.2, 0, 0.2])
 
 q = 1 / (simulating_steps* (x_array[1] - x_array[0])) * np.arange(0, simulating_steps, 1)
 
@@ -159,42 +160,103 @@ q = q - np.max(q) / 2
 Q, QQ = np.meshgrid(q, q)
 
 # A function to calculate the image for single Gaussian distribution
-for i in range(len(epsilon_0_series)):
-    epsilon_0 = epsilon_0_series[i]
+def findEctot(LEEMType, epsilon_n):
+    if LEEMType == 'NAC':
+        C_c = -0.075  # m  Second Rank Chromatic Aberration Coefficient
+        C_cc = 23.09 # m   Third Rank Chromatic Aberration Coefficient
+        C_3c = -59.37  # m   Forth Rank Chromatic Aberration Coefficient
+    if LEEMType == 'AC':
+        C_c = 0  # m   Second Rank Chromatic Aberration Coefficient
+        C_cc = 27.9 # m   Third Rank Chromatic Aberration Coefficient
+        C_3c = -67.4 # m   Forth Rank Chromatic Aberration Coefficient
+    
+    E = 15010 # eV
     delta_E = 0.2424 # eV
     sigma_E = delta_E/(2*np.sqrt(2*np.log(2)))
     b_1 = 1/2*C_c*lamda*(Q**2 - QQ**2)/E + 1/4*C_3c*lamda**3*(Q**4 - QQ**4)/E
     b_2 = 1/2*C_cc*lamda*(Q**2 - QQ**2)/E**2
     
-    b_1p = b_1 - 1j*epsilon_0/(2*np.pi*sigma_E**2) 
+    d_n = b_1 - 1j*epsilon_n/(2*np.pi*sigma_E**2) 
     
     # The purely chromatic envelop functions
     E_cc = (1 - 1j*4*np.pi*b_2*sigma_E**2)**(-1/2)
-    E_ct = E_cc * np.exp(-2*np.pi**2 *E_cc**2 *sigma_E**2 *b_1p**2)*np.exp(- epsilon_0**2/(2*sigma_E**2))
-
+    E_ct = E_cc * np.exp(-2*(np.pi*sigma_E*E_cc*d_n)**2 - epsilon_n**2/(2*sigma_E**2))
+    
+    E_cc = E_cc[int(len(q)/2),:]    
     E_ctot = E_ct[int(len(q)/2),:]
-
-    plt.plot(q/(1e9), E_ctot.real, label = 'Re($E_{C,tot}(q,0)$)')
-    plt.plot(q/(1e9), E_ctot.imag, label = 'Im($E_{C,tot}(q,0)$)')
     
-    plt.ylim(-0.25, 0.25)
-    plt.xlim(-0.5, 0.5)
-    # naming the x axis
-    plt.xlabel('q($nm^{-1}$)')
-    # naming the y axis
-    plt.ylabel('$E_{C,tot}(q,0)$')
-    plt.axvline(x=q_ap/1e9, color='k', linestyle='--', label = "$Cutoff q_{ap}$")
-    plt.axvline(x=-q_ap/1e9, color='k', linestyle='--')
-    plt.axhline(y=0, color='k', linestyle='--')
-    
-      
-    # giving a title to my graph
-    plt.title('$E_{ct,tot}(q,0)$ versus q, $\epsilon_0$ = ' + str(round(epsilon_0_series[i], 2)) + "eV")
-    plt.legend(bbox_to_anchor =(1.35, 1), ncol = 1)
-    
-    plt.show()
+    return E_ctot
+
+q_apNAC = 2.34e-3/lamda 
+q_apAC = 7.37e-3/lamda 
+xticks = [0, 0.5, 1, 1.5]
+yticks = [-0.5, 0, 0.5, 1]
+
+fig, (ax1,ax2,ax3) = plt.subplots(nrows=1, ncols=3)
+fig.set_size_inches(14, 4)
+
+# e=-0.2
+E_ctotNAC = findEctot('NAC', epsilon_0_series[0])
+E_ctotAC = findEctot('AC', epsilon_0_series[0])
+ax1.set_ylim(-0.9, 1.2)
+ax1.set_xlim(0, 1.8)
+ax1.set_ylabel('Amplitude')
+ax1.set_xlabel(r'$q(\rm nm^{-1})$')
+ax1.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
+ax1.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
+ax1.axhline(y=0, color='k', linestyle='--')
+ax1.minorticks_on()
+ax1.set_yticks(yticks)
+ax1.set_xticks(xticks)
+ax1.set_title(r'$\epsilon_{\rm n} = -0.2$ eV')
+# ax1.text(x=1.35, y=1.08, s = r'$\epsilon_n = -0.2 eV$', color = 'k')
+
+ax1.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
+ax1.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
+ax1.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
+ax1.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
 
 
-################################
-###### End of Programme ########
-################################
+# e=0
+E_ctotNAC = findEctot('NAC', epsilon_0_series[1])
+E_ctotAC = findEctot('AC', epsilon_0_series[1])
+ax2.set_ylim(-0.9, 1.2)
+ax2.set_xlim(0, 1.8)
+ax2.set_xlabel(r'$q(\rm nm^{-1})$')
+ax2.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
+ax2.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
+ax2.axhline(y=0, color='k', linestyle='--')
+ax2.minorticks_on()
+ax2.set_yticks(yticks)
+ax2.set_xticks(xticks)
+ax2.set_title(r'$\epsilon_{\rm n} = 0$ eV')
+# ax2.text(x=1.43, y=1.08, s = r'$\epsilon_n = 0.0 eV$', color = 'k')
+
+ax2.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
+ax2.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
+ax2.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
+ax2.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
+
+# e=0.2
+E_ctotNAC = findEctot('NAC', epsilon_0_series[2])
+E_ctotAC = findEctot('AC', epsilon_0_series[2])
+ax3.set_ylim(-0.9, 1.2)
+ax3.set_xlim(0, 1.8)
+ax3.set_xlabel(r'$q(\rm nm^{-1})$')
+ax3.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
+ax3.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
+ax3.axhline(y=0, color='k', linestyle='--')
+ax3.minorticks_on()
+ax3.set_yticks(yticks)
+ax3.set_xticks(xticks)
+ax3.set_title(r'$\epsilon_{\rm n} = 0.2$ eV')
+# ax3.text(x=1.42, y=1.08, s = r'$\epsilon_n = 0.2 eV$', color = 'k')
+
+ax3.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
+ax3.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
+ax3.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
+ax3.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
+
+handles, labels = ax3.get_legend_handles_labels()
+fig.legend(handles, labels, loc=8, ncol = 3, frameon=False)
+fig.subplots_adjust(bottom=0.27)
