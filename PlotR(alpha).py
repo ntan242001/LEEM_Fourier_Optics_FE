@@ -12,7 +12,23 @@ R_G1_ac = []
 R_FN_ac = []
 
 
-with open('Step amplitude object_R(a)_G1_nac.csv', 'r') as csvfile:
+# with open('Run4_R(a)_G1_nac.csv', 'r') as csvfile:
+#     csv_reader = csv.reader(csvfile, delimiter=',')
+#     line_count = 0
+#     for row in csv_reader:
+#         if line_count == 0:
+#             line_count += 1
+#         else:
+#             if row == []:
+#                 continue
+#             else:
+#                 a_array_nac.append(float(row[0]))
+#                 R_G1_nac.append(float(row[1]))   
+#     csvfile.close()
+    
+
+
+with open('Run5_R(a)_FN_nac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
     line_count = 0
     for row in csv_reader:
@@ -23,23 +39,9 @@ with open('Step amplitude object_R(a)_G1_nac.csv', 'r') as csvfile:
                 continue
             else:
                 a_array_nac.append(float(row[0]))
-                R_G1_nac.append(float(row[1]))   
-    csvfile.close()
-    
-a_array_nac = np.array(a_array_nac)*1e3
-
-with open('Step amplitude object_R(a)_FN_nac.csv', 'r') as csvfile:
-    csv_reader = csv.reader(csvfile, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            line_count += 1
-        else:
-            if row == []:
-                continue
-            else:
                 R_FN_nac.append(float(row[1]))   
     csvfile.close()
+a_array_nac = np.array(a_array_nac)*1e3
     
 with open('Step amplitude object_R(a)_G1_ac.csv', 'r') as csvfile:
     csv_reader = csv.reader(csvfile, delimiter=',')
@@ -70,17 +72,17 @@ with open('Step amplitude object_R(a)_FN_ac.csv', 'r') as csvfile:
                 R_FN_ac.append(float(row[1]))   
     csvfile.close()
     
-smooth_R_G1_nac = savgol_filter(R_G1_nac, 31, 8)
+# smooth_R_G1_nac = savgol_filter(R_G1_nac, 31, 8)
 smooth_R_FN_nac = savgol_filter(R_FN_nac, 31, 8)
-smooth_R_G1_ac = savgol_filter(R_G1_ac, 31, 9)
-smooth_R_FN_ac = savgol_filter(R_FN_ac, 31, 9)
+# smooth_R_G1_ac = savgol_filter(R_G1_ac, 31, 9)
+# smooth_R_FN_ac = savgol_filter(R_FN_ac, 31, 9)
     
 ########## Plotting the curves ############
 fig, ax = plt.subplots()
 
-ax.loglog(a_array_ac, smooth_R_G1_ac, 'm-', label = "AC, Gaussian")
-ax.loglog(a_array_ac, smooth_R_FN_ac, 'c-', label = "AC, FN")
-ax.loglog(a_array_nac, smooth_R_G1_nac, 'r-', label = "NAC, Gaussian")
+# ax.loglog(a_array_ac, smooth_R_G1_ac, 'm-', label = "AC, Gaussian")
+# ax.loglog(a_array_ac, smooth_R_FN_ac, 'c-', label = "AC, FN")
+# ax.loglog(a_array_nac, smooth_R_G1_nac, 'r-', label = "NAC, Gaussian")
 ax.loglog(a_array_nac, smooth_R_FN_nac, 'b-', label = "NAC, FN")
 
 import matplotlib.ticker as ticker
@@ -98,10 +100,10 @@ ax.xaxis.set_major_formatter(ticker.FuncFormatter(myLogFormat))
 
 yminimum, ymaximum = 0.4, 20
 
-ax.axvline(x=2.34, linestyle = '--', c = 'r')
-ax.axvline(x=1.95, linestyle = '--', c = 'b')
-ax.axvline(x=7.37, linestyle = '--', c = 'm')
-ax.axvline(x=7.03, linestyle = '--', c = 'c')
+# ax.axvline(x=2.72, linestyle = '--', c = 'r')
+ax.axvline(x=2.41, linestyle = '--', c = 'b')
+# ax.axvline(x=7.37, linestyle = '--', c = 'm')
+# ax.axvline(x=7.03, linestyle = '--', c = 'c')
 
 ax.set_xlabel("Aperture angle (mrad)")
 ax.set_ylabel("Resolution (nm)")
