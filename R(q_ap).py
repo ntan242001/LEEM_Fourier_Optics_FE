@@ -30,7 +30,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
             
             alpha_ap = 2.34e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
             
             delta_E = 0.2424  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
@@ -48,7 +48,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 92.8
         
             alpha_ap = 7.37e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
         
             delta_E = 0.2424  # eV  Energy Spread
             M_L = 0.653  # Lateral Magnification
@@ -74,7 +74,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.2424  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -95,7 +95,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.2424  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -180,8 +180,8 @@ def create_object(object_type_str, k = 1):
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
     print(object_type + " created")
 
-choose_LEEM_type("IBM", aberration_corrected_bool = True)
-choose_defocus("In-focus")
+choose_LEEM_type("IBM", aberration_corrected_bool = False)
+delta_z = 6.8e-7
 create_object("Step amplitude object", k = 1)
 
 ##################################
@@ -199,11 +199,11 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different cut-off frequencies
-alpha_ap_series = np.linspace(0.5*1e-3, 10.3*1e-3, 50)
-# alpha_ap_series_1 = np.linspace(0.5*1e-3, 3.5*1e-3, 30)
-# alpha_ap_series_2 = np.linspace(4*1e-3, 20*1e-3, 20)
-# alpha_ap_series = np.concatenate([alpha_ap_series_1, alpha_ap_series_2])
-# alpha_ap_series_1 = np.linspace(0.5*1e-3, 3.5 *1e-3, 20)
+# alpha_ap_series = np.linspace(0.5*1e-3, 10.3*1e-3, 5)
+alpha_ap_series_1 = np.linspace(0.5*1e-3, 3.5*1e-3, 30)
+alpha_ap_series_2 = np.linspace(4*1e-3, 20*1e-3, 2)
+alpha_ap_series = np.concatenate([alpha_ap_series_1, alpha_ap_series_2])
+# alpha_ap_series_1 = np.linspace(0.5*1e-3, 3.5 *1e-3, 18)
 # alpha_ap_series_2 = np.linspace(4*1e-3, 20*1e-3, 30)
 # alpha_ap_series = np.concatenate([alpha_ap_series_1, alpha_ap_series_2])
 q_ap_series = alpha_ap_series/lamda
@@ -492,7 +492,7 @@ plt.title('R(alpha_ap)')
 plt.show()
 '''
 
-# with open('Step amplitude object_R(a)_G1_ac.csv', 'a') as csvfile:
+# with open('Run4_R(a)_G1_nac.csv', 'w') as csvfile:
 #     writer = csv.writer(csvfile, delimiter=',')
 #     writer.writerow(['Aperture angle (mrad)', 'Resolution (nm)'])
     
@@ -501,7 +501,7 @@ plt.show()
  
 #     csvfile.close()
     
-with open('Step amplitude object_R(a)_FN_ac.csv', 'a') as csvfile:
+with open('Run5_R(a)_FN_nac.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Aperture angle (mrad)', 'Resolution (nm)'])
     
@@ -510,17 +510,17 @@ with open('Step amplitude object_R(a)_FN_ac.csv', 'a') as csvfile:
  
     csvfile.close()
     
-with open('data.csv', 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-    writer.writerow(['Aperture angle (mrad)', 'Intensity'])
+# with open('data.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
+#     writer.writerow(['Aperture angle (mrad)', 'Intensity'])
     
-    for alpha_ap in alpha_ap_series:
-        row = [alpha_ap]
-        I_list = list(matrixIFN[:, i])
-        row = row + I_list
-        writer.writerow(row)
+#     for alpha_ap in alpha_ap_series:
+#         row = [alpha_ap]
+#         I_list = list(matrixIFN[:, i])
+#         row = row + I_list
+#         writer.writerow(row)
  
-    csvfile.close()
+#     csvfile.close()
 
 '''
 # Plotting the object
