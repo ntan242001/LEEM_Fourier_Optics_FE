@@ -30,7 +30,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 39.4  # m  Fifth Order Spherical Aberration Coefficient
             
             alpha_ap = 2.34e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
             
             delta_E = 0.2424  # eV  Energy Spread
             M_L = 1  # Lateral Magnification
@@ -48,7 +48,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 92.8
         
             alpha_ap = 7.37e-3  # rad Aperture angle
-            alpha_ill = 0.1e-3  # rad Illumination Divergence Angle
+            alpha_ill = 0.055e-3  # rad Illumination Divergence Angle
         
             delta_E = 0.2424  # eV  Energy Spread
             M_L = 1  # Lateral Magnification
@@ -74,7 +74,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.6223 * kappa**(3/2) - 79.305  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.2424  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -95,7 +95,7 @@ def choose_LEEM_type(LEEM_type_str, aberration_corrected_bool = False):
             C_5 = 0.5624 * kappa**(3/2) - 16.541  # m  Fifth Order Spherical Aberration Coefficient
             
             delta_E = 0.2424  # eV  Energy Spread
-            alpha_ill = 0.1e-3  # rad Illumination divergence angle
+            alpha_ill = 0.055e-3  # rad Illumination divergence angle
             M_L = 0.653  # Lateral Magnification
             
             lamda = 6.6261e-34 / np.sqrt(2 * 1.6022e-19 * 9.1095e-31 * E) # in metre
@@ -170,7 +170,8 @@ create_object("Step amplitude object", k = 1)
 ##################################
 ######## End of Preamble #########
 ##################################
-
+alpha_ap = 2.47e-3
+q_ap = alpha_ap/lamda
 
 
 ##################################
@@ -182,10 +183,11 @@ t_0 = time.time()
 object_function_reversed = object_function[::-1] 
     
 # Creating an array of different delta z
-delta_z_series = np.linspace(-1.8*(C_3*lamda)**(1/2), 1.8*(C_3*lamda)**(1/2), 65)
-# delta_z_series = np.linspace(-1.8*(C_5*lamda**2)**(1/3), 1.8*(C_5*lamda**2)**(1/3), 65)
-
-
+delta_z_series = np.linspace(-1.8*(C_3*lamda)**(1/2), 1.8*(C_3*lamda)**(1/2), 64)
+# delta_z_series = np.linspace(-1.8*(C_5*lamda**2)**(1/3), 1.8*(C_5*lamda**2)**(1/3), 64)
+# del1 = 0.5e-6
+# delta_z_series = del1*np.arange(-2,7)
+# delta_z_series = 1e-6*np.linspace(-3, 3, 1+2*2)
 # Initialising the series of function I(x) at different values of q_ap
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
 matrixIFN = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
@@ -466,7 +468,7 @@ resolution_list1 = R(matrixI1)
 resolution_listFN = R(matrixIFN)
 
 
-with open('R(dz) G1 nac_LEEM.csv', 'w') as csvfile:
+with open('Run5_R(dz)_G1_nac.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Defocus', 'Resolution (nm)'])
     
@@ -475,7 +477,7 @@ with open('R(dz) G1 nac_LEEM.csv', 'w') as csvfile:
  
     csvfile.close()
     
-with open('R(dz) FN nac_LEEM.csv', 'w') as csvfile:
+with open('Run5_R(dz)_FN_nac.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Defocus', 'Resolution (nm)'])
     
@@ -484,37 +486,41 @@ with open('R(dz) FN nac_LEEM.csv', 'w') as csvfile:
 
     csvfile.close()
 
-with open('Image G1 nac_LEEM.csv', 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
+# with open('Image G1 nac_LEEM.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
     
-    for i in range(len(delta_z_series)):
-        writer.writerow([delta_z_series[i], matrixI1[i,:]])
+#     for i in range(len(delta_z_series)):
+#         writer.writerow([delta_z_series[i], matrixI1[i,:]])
  
-    csvfile.close()
+#     csvfile.close()
     
-with open('Image FN nac_LEEM.csv', 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
+# with open('Image FN nac_LEEM.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
     
-    for i in range(len(delta_z_series)):
-        writer.writerow([delta_z_series[i], matrixIFN[i,:]])
+#     for i in range(len(delta_z_series)):
+#         writer.writerow([delta_z_series[i], matrixIFN[i,:]])
 
-    csvfile.close()
+#     csvfile.close()
 
 
 
 
 # plotting the curves
+
 for i in range(len(delta_z_series)):
-    plt.plot(x_array, matrixIFN[:, i])
+    plt.plot(x_array*1e9, matrixIFN[:, i], 'r-')
+    plt.plot(x_array*1e9, matrixI1[:, i], 'k--')
     
-    plt.xlim(-20e-9, 20e-9)
+    plt.xlim(-20, 20)
+    plt.ylim(-0.2, 1.8)
+    plt.minorticks_on()
     # naming the x axis
-    plt.xlabel('Position x (m)')
+    plt.xlabel('Position x (nm)')
     # naming the y axis
     plt.ylabel('Instensity')
       
     # giving a title to my graph
-    plt.title('I(x)')
+    plt.title(str(1e6*delta_z_series[i])+r'$\rm \mu$m')
     
     plt.show()
     
