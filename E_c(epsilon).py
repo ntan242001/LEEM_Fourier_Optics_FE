@@ -192,75 +192,39 @@ q_apAC = 7.37e-3/lamda
 xticks = [0, 0.5, 1, 1.5]
 yticks = [-0.5, 0, 0.5, 1]
 
-fig, (ax1,ax2,ax3) = plt.subplots(nrows=1, ncols=3)
+fig, ax = plt.subplots(nrows=1, ncols=3)
 fig.set_size_inches(14, 4)
+fig.tight_layout()
+
+ax1,ax2,ax3 = ax
 
 # e=-0.2
-E_ctotNAC = findEctot('NAC', epsilon_0_series[0])
-E_ctotAC = findEctot('AC', epsilon_0_series[0])
-ax1.set_ylim(-0.9, 1.2)
-ax1.set_xlim(0, 1.8)
-ax1.set_ylabel('Amplitude')
-ax1.set_xlabel(r'$q(\rm nm^{-1})$')
-ax1.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
-ax1.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
-ax1.axhline(y=0, color='k', linestyle='--')
-ax1.minorticks_on()
-ax1.set_yticks(yticks)
-ax1.set_xticks(xticks)
-ax1.set_title(r'$\epsilon_{\rm n} = -0.2$ eV')
+
+
+for i in range(3):
+    ax[i].set_ylim(-0.9, 1.2)
+    ax[i].set_xlim(0, 1.8)
+    ax[i].set_xlabel(r'$q(\rm nm^{-1})$', fontsize=12)
+    ax[i].axvline(x=q_apNAC/1e9, color='r', linestyle='--')
+    ax[i].axvline(x=q_apAC/1e9, color='b', linestyle='--')
+    ax[i].minorticks_on()
+    ax[i].set_yticks(yticks,labelsize=12)
+    ax[i].set_xticks(xticks,labelsize=12)
+    ax[i].text(1.21, 1.0, r'$\epsilon_{\rm n} = $'+str(epsilon_0_series[i])+' eV',fontsize=12)
+    E_ctotNAC = findEctot('NAC', epsilon_0_series[i])
+    E_ctotAC = findEctot('AC', epsilon_0_series[i])
+    ax[i].plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
+    ax[i].plot(q/(1e9), E_ctotAC.imag, 'b--', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
+    ax[i].plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
+    ax[i].plot(q/(1e9), E_ctotNAC.imag, 'r--', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
+
+ax1.set_ylabel('Amplitude', fontsize=12)
+tex_y=-0.5
+ax2.text(q_apNAC/1e9 + 0.02,tex_y,'NAC', c='r', fontsize=12)
+ax2.text(q_apAC/1e9 + 0.02,tex_y,'AC', c='b', fontsize=12)
+
 # ax1.text(x=1.35, y=1.08, s = r'$\epsilon_n = -0.2 eV$', color = 'k')
 
-ax1.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
-ax1.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
-ax1.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
-ax1.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
-
-
-# e=0
-E_ctotNAC = findEctot('NAC', epsilon_0_series[1])
-E_ctotAC = findEctot('AC', epsilon_0_series[1])
-ax2.set_ylim(-0.9, 1.2)
-ax2.set_xlim(0, 1.8)
-ax2.set_xlabel(r'$q(\rm nm^{-1})$')
-ax2.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
-ax2.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
-ax2.axhline(y=0, color='k', linestyle='--')
-ax2.minorticks_on()
-ax2.set_yticks(yticks)
-ax2.set_xticks(xticks)
-ax2.set_title(r'$\epsilon_{\rm n} = 0$ eV')
-# ax2.text(x=1.43, y=1.08, s = r'$\epsilon_n = 0.0 eV$', color = 'k')
-
-ax2.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
-ax2.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
-ax2.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
-ax2.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
-
-# e=0.2
-E_ctotNAC = findEctot('NAC', epsilon_0_series[2])
-E_ctotAC = findEctot('AC', epsilon_0_series[2])
-ax3.set_ylim(-0.9, 1.2)
-ax3.set_xlim(0, 1.8)
-ax3.set_xlabel(r'$q(\rm nm^{-1})$')
-ax3.axvline(x=q_apNAC/1e9, color='r', linestyle='--', label = r"$q_{\rm ap, NAC}$")
-ax3.axvline(x=q_apAC/1e9, color='b', linestyle='--', label = r"$q_{\rm ap, AC}$")
-ax3.axhline(y=0, color='k', linestyle='--')
-ax3.minorticks_on()
-ax3.set_yticks(yticks)
-ax3.set_xticks(xticks)
-ax3.set_title(r'$\epsilon_{\rm n} = 0.2$ eV')
-# ax3.text(x=1.42, y=1.08, s = r'$\epsilon_n = 0.2 eV$', color = 'k')
-
-ax3.plot(q/(1e9), E_ctotAC.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,n,AC}(q,0)$]')
-ax3.plot(q/(1e9), E_ctotAC.imag, 'g-.', linewidth=2, label = r'Im[$E_{\rm C,n,AC}(q,0)$]')
-ax3.plot(q/(1e9), E_ctotNAC.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C,n,NAC}(q,0)$]')
-ax3.plot(q/(1e9), E_ctotNAC.imag, 'c:', linewidth=2, label = r'Im[$E_{\rm C,n,NAC}(q,0)$]')
-
 handles, labels = ax3.get_legend_handles_labels()
-fig.legend(handles, labels, loc=8, ncol = 3, frameon=False)
+fig.legend(handles, labels, loc=8, ncol = 4, frameon=False)
 fig.subplots_adjust(bottom=0.27)
-
-################################
-###### End of Programme ########
-################################
