@@ -168,10 +168,10 @@ def findEcFN(LEEMtype):
     return 0.28682*findEctot(LEEMtype, -0.03925, 0.0531) + 0.33146*findEctot(LEEMtype, -0.3382, 0.1991) + 0.38173*findEctot(LEEMtype, -0.1438, 0.0962)
 
 LEEM_list = ['NAC','AC']
-q_apNAC = 2.34e-3/lamda 
-q_apAC = 7.37e-3/lamda 
+q_apNAC = 1.94e-3/lamda 
+q_apAC = 7.04e-3/lamda 
 # xticks = [0, 0.5, 1, 1.5]
-yticks = 0.2*np.arange(-1,7)
+yticks = np.array([-0.2,  0. ,  0.2,  0.4,  0.6,  0.8,  1. ,  1.2])
 
 fig, ax = plt.subplots(nrows=1, ncols=2)
 fig.set_size_inches(10, 4)
@@ -180,6 +180,13 @@ fig.subplots_adjust(wspace=0.4)
 
 ax1,ax2 =ax
 s=15
+xticks1 = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+xticks2 = [0, 0.5, 1, 1.5]
+xticks=[xticks1,xticks2]
+ax1.set_xticks(xticks1)
+ax2.set_xticks(xticks2)
+ax1.axvline(x=q_apNAC/1e9, color='k', linestyle=':',linewidth=2)
+ax2.axvline(x=q_apAC/1e9, color='k', linestyle=':', linewidth=2)
 
 for i in range(2):
     ax[i].axhline(y=0, color='k', linestyle='-', linewidth=0.9)
@@ -187,33 +194,34 @@ for i in range(2):
     ax[i].set_xlabel(r'q $\mathrm{(nm^{-1})}$', fontsize=s)
     ax[i].minorticks_on()
     ax[i].set_yticks(yticks)
+    ax[i].set_xticklabels(xticks[i], rotation=0, fontsize=s-2)
+    ax[i].set_yticklabels(yticks, rotation=0, fontsize=s-2)
     ax[i].set_ylabel('Amplitude', fontsize=s)
     E_cFN = findEcFN(LEEM_list[i])
     E_cG1 = findEctot(LEEM_list[i], 0, delta_E/(2*np.sqrt(2*np.log(2))))
-    ax[i].plot(q/(1e9), E_cFN.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C(N)}(q,0)$]')
-    ax[i].plot(q/(1e9), E_cFN.imag, 'r--', linewidth=2, label = r'Im[$E_{\rm C(N)}(q,0)$]')
-    ax[i].plot(q/(1e9), E_cG1.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,0}(q,0)$]')
-    ax[i].plot(q/(1e9), E_cG1.imag, 'b--', linewidth=2, label = r'Im[$E_{\rm C,0}(q,0)$]')
-
-
+    ax[i].plot(q/(1e9), E_cFN.real, 'r-', linewidth=2, label = r'Re[$E_{\rm C(N)}]$')
+    ax[i].plot(q/(1e9), E_cFN.imag, 'r--', linewidth=2, label = r'Im[$E_{\rm C(N)}]$')
+    ax[i].plot(q/(1e9), E_cG1.real, 'b-', linewidth=2, label = r'Re[$E_{\rm C,0}]$')
+    ax[i].plot(q/(1e9), E_cG1.imag, 'b--', linewidth=2, label = r'Im[$E_{\rm C,0}]$')
+   
+ax1.legend(fontsize=s-3,bbox_to_anchor=(0.62,0.4),frameon=False)
+ax2.legend(fontsize=s-3,bbox_to_anchor=(0.62,0.4),frameon=False)
 ax1.set_xlim(0, 0.6)
 ax2.set_xlim(0, 1.8)
-ax1.axvline(x=q_apNAC/1e9, color='k', linestyle='--', label = r"$q_{\rm ap, NAC}$")
-ax2.axvline(x=q_apAC/1e9, color='k', linestyle='--')
+
 ax1.text(0.52, 1.08, s = 'NAC', color = 'k', fontsize=s)
 ax2.text(1.62, 1.08, s = 'AC', color = 'k', fontsize=s)
-ax1.set_xticks([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
-ax2.set_xticks([0, 0.5, 1, 1.5])
-ax1.text(0.01,0.35, r"$\mathrm{Im(E_C)}$", color='k' ,fontsize=s)
-ax2.text(0.25,0.25, r"$\mathrm{Im(E_C)}$", color='k' ,fontsize=s)
-ax1.text(0.03,1.05, r"$\mathrm{Re(E_C)}$", color='k' ,fontsize=s)
-ax2.text(0.15,1.05, r"$\mathrm{Re(E_C)}$", color='k' ,fontsize=s)
+
+# ax1.text(0.01,0.35, r"$\mathrm{Im(E_C)}$", color='k' ,fontsize=s)
+# ax2.text(0.25,0.25, r"$\mathrm{Im(E_C)}$", color='k' ,fontsize=s)
+# ax1.text(0.03,1.05, r"$\mathrm{Re(E_C)}$", color='k' ,fontsize=s)
+# ax2.text(0.15,1.05, r"$\mathrm{Re(E_C)}$", color='k' ,fontsize=s)
 
 ax1.text(-0.15,1.15, '(a)',fontsize=s)
 ax2.text(-0.45,1.15, '(b)',fontsize=s)
 
 
 handles, labels = ax2.get_legend_handles_labels()
-# fig.legend(handles, labels, loc=8, ncol = 4, frameon=False, fontsize=s)
+# fig.legend(handles, labels, loc=8,1 ncol = 4, frameon=False, fontsize=s)
 fig.subplots_adjust(bottom=0.2)
 
