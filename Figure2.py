@@ -66,7 +66,7 @@ mu_tot = sum(mu)
 mu = mu/mu_tot
 
 fig,ax=plt.subplots()
-ax.axvline(x=0, linestyle = '--' ,color = 'k')
+ax.axvline(x=0, linestyle = '-' ,color = 'k',linewidth=0.8)
 
 color = ['#f99a1c', (51/235, 204/235, 51/235), 'b']
 for i in range(N):
@@ -88,26 +88,33 @@ ax.set_ylim(0, 1.1)
 ax.minorticks_on()
 ax.set_xlabel('Energy (eV)', fontsize=s)
 ax.set_ylabel('Distribution', fontsize=s)
+
+xticks=np.array([-1. , -0.8, -0.6, -0.4, -0.2,  0. ,  0.2])
+yticks=np.array([0. , 0.2, 0.4, 0.6, 0.8, 1. ])
+ax.set_yticks(yticks)
+ax.set_xticks(xticks)
+ax.set_xticklabels(xticks, rotation=0, fontsize=s-2)
+ax.set_yticklabels(yticks, rotation=0, fontsize=s-2)
 # plt.title('Field emission distribution')
 # plt.text(-0.07, 0, '$E_F$')
 ax.legend(frameon=False, fontsize=s)
 fig.tight_layout()
 
-for i in range(N):
-    if i == 0:
-        label = 'c_{1}(\epsilon)'
-    if i == 1:
-        label = 'c_{2}(\epsilon)'    
-    if i == 2:
-        label = 'c_{3}(\epsilon)'
-    print(label)    
-    print('Weight: ' + str(round(mu[i], 5)))
-    print('Norminal energy: ' + str(round(x0[i], 5)) + ' eV')
-    print('FWHM = ' +  str(round(FWHM[i], 4)) + ' eV; sigma = ' + str(round(sigma[i], 4)))
-    print()
+# for i in range(N):
+#     if i == 0:
+#         label = 'c_{1}(\epsilon)'
+#     if i == 1:
+#         label = 'c_{2}(\epsilon)'    
+#     if i == 2:
+#         label = 'c_{3}(\epsilon)'
+#     print(label)    
+#     print('Weight: ' + str(round(mu[i], 5)))
+#     print('Norminal energy: ' + str(round(x0[i], 5)) + ' eV')
+#     print('FWHM = ' +  str(round(FWHM[i], 4)) + ' eV; sigma = ' + str(round(sigma[i], 4)))
+#     print()
     
-print('Single Gauss fit FWHM:', round(G_FWHM, 4))
-#print(list(counts))
+# print('Single Gauss fit FWHM:', round(G_FWHM, 4))
+# #print(list(counts))
 
 
 '''
