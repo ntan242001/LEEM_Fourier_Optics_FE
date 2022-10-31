@@ -103,13 +103,13 @@ fig.subplots_adjust(hspace=0)
 s=15
 width=2
 
-ax1.plot(q, W_s.real, 'k-', linewidth=width, label = r'Re[$\mathrm{W_s(q,0)}$]')
+ax1.plot(q, W_s.real, 'k', linestyle=':', linewidth=width, label = r'Re[$\mathrm{W_s(q,0)}$]')
 ax1.plot(q, CTFG.real, 'b-', linewidth=width, label = r'Re[$\mathrm{R(q,0,0)}$]')
-ax1.plot(q, CTF.real, 'r-', linewidth=width, label = r'Re[$\mathrm{R_{(N)}(q,0,0)}$]')
+ax1.plot(q, CTF.real, 'r--', linewidth=width, label = r'Re[$\mathrm{R_{(N)}(q,0,0)}$]')
 
-ax2.plot(q, W_s.imag, color = 'gray', linewidth=width, label = r'Im[$\mathrm{W_s(q,0)}$]')
+ax2.plot(q, W_s.imag, color = 'gray', linestyle=':', linewidth=width, label = r'Im[$\mathrm{W_s(q,0)}$]')
 ax2.plot(q, CTFG.imag, 'g-', linewidth=width, label = r'Im[$\mathrm{R(q,0,0)}$]')
-ax2.plot(q, CTF.imag, color = 'darkorange', linewidth=width, label = r'Im[$\mathrm{R_{(N)}(q,0,0)}$]')
+ax2.plot(q, CTF.imag, color = 'darkorange', linestyle='--', linewidth=width, label = r'Im[$\mathrm{R_{(N)}(q,0,0)}$]')
 
 
 ax2.axhline(y=0, color='k', linestyle='-', linewidth=0.9)
