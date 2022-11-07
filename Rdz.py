@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import time
 import csv
-import math
 
 ##############################
 ######### Preamble ###########
@@ -129,17 +128,6 @@ def create_object(object_type_str, k = 1):
             if element > 0:
                 object_amplitude[counter] = 1/np.sqrt(2)
     
-    if object_type == "Error function amplitude object":
-    # Creating an error function amplitude object whose phase is uniformly set to 0         
-        object_amplitude = np.ones_like(x_array)
-        
-        object_phase = np.zeros_like(x_array)
-        
-        for counter, element in enumerate(x_array):
-            object_amplitude[counter] = math.erf(element*1e8)/2*(1-1/np.sqrt(2)) + (1+1/np.sqrt(2))/2
-            
-        object_amplitude = object_amplitude[::-1]
-    
     if object_type == "Step phase object":
     # Creating a k.pi step phase object whose amplitude is uniformly set to 1        
         object_amplitude = np.ones_like(x_array)
@@ -149,16 +137,6 @@ def create_object(object_type_str, k = 1):
         for counter, element in enumerate(x_array):
             if element > 0:
                 object_phase[counter] = k * np.pi
-     
-    
-    if object_type == "Error function phase object":
-    # Creating an error function phase object whose amplitude is uniformly set to 1
-        object_amplitude = np.ones_like(x_array)
-        
-        object_phase = np.ones_like(x_array)
-        
-        for counter, element in enumerate(x_array):
-            object_phase[counter] = (math.erf(element*1e8)+1)/2*k*np.pi
 
     # Object function
     object_function = np.multiply(object_amplitude, np.exp(1j * object_phase)) 
@@ -189,9 +167,8 @@ delta_z_series = np.linspace(-1.8*(C_5*lamda**2)**(1/3), 1.8*(C_5*lamda**2)**(1/
 # delta_z_series = del1*np.arange(-1,4)
 # delta_z_series = 1e-8*np.linspace(4,8,7)
 # Initialising the series of function I(x) at different values of q_ap
-# delta_z_series = np.array([0])
 matrixI1 = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
-matrixIFN = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
+# matrixIFN = np.zeros((len(x_array), len(delta_z_series)), dtype=complex)
 
 
 # A function to calculate the image for single Gaussian distribution
@@ -335,13 +312,13 @@ def ImageFN(delta_z, delta_z_index):
 
     return matrixI
 
-with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
-    parallelResult = parallel(delayed(ImageFN)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
+# with Parallel(n_jobs=-1, verbose=50, max_nbytes="50M") as parallel:
+#     parallelResult = parallel(delayed(ImageFN)(delta_z, delta_z_index) for delta_z_index, delta_z in enumerate(delta_z_series))
 
-for mat in parallelResult:
-    matrixIFN = matrixIFN + mat
+# for mat in parallelResult:
+#     matrixIFN = matrixIFN + mat
 
-matrixIFN = np.abs(matrixIFN)
+# matrixIFN = np.abs(matrixIFN)
 
 print('Simulation finished.')
 t_1 = time.time()
@@ -357,7 +334,7 @@ def R(matrixI):
     for i in range(len(delta_z_series)):
         matrixI_i = matrixI[:, i]
         
-        if object_type == "Step amplitude object" or object_type == "Error function amplitude object":
+        if object_type == "Step amplitude object":
             half_steps = int(simulating_steps/2)
             # Starting from the centre and find the local minimum to the right of the central point
             I_min = matrixI_i[half_steps]
@@ -381,6 +358,9 @@ def R(matrixI):
             # The region of interest to find the resolution
             x_array_focus = x_array[idx_max:idx_min]
             matrixI_focus = matrixI_i[idx_max:idx_min]
+            
+            if idx_max == idx_min:
+                break
             
             I_100_index = np.argmin(np.abs(matrixI_focus - 1))
             I_100 = matrixI_focus[I_100_index]
@@ -460,10 +440,10 @@ def R(matrixI):
         resolution_list.append(resolution_i)
     return resolution_list
 resolution_list1 = R(matrixI1)
-resolution_listFN = R(matrixIFN)
+# resolution_listFN = R(matrixIFN)
 
 
-with open('Scherzer_R(dz)_G1_ac.csv', 'w') as csvfile:
+with open('Scherzer_R(dz)_G1_nac.csv', 'w') as csvfile:
     writer = csv.writer(csvfile, delimiter=',')
     writer.writerow(['Defocus', 'Resolution (nm)'])
     
@@ -472,13 +452,13 @@ with open('Scherzer_R(dz)_G1_ac.csv', 'w') as csvfile:
     csvfile.close()
     
     
-with open('Scherzer_R(dz)_FN_ac.csv', 'w') as csvfile:
-    writer = csv.writer(csvfile, delimiter=',')
-    writer.writerow(['Defocus', 'Resolution (nm)'])
+# with open('Scherzer_R(dz)_FN_ac.csv', 'w') as csvfile:
+#     writer = csv.writer(csvfile, delimiter=',')
+#     writer.writerow(['Defocus', 'Resolution (nm)'])
     
-    for i in range(len(delta_z_series)):
-        writer.writerow([delta_z_series[i], 1e9 * resolution_listFN[i]])
-    csvfile.close()
+#     for i in range(len(delta_z_series)):
+#         writer.writerow([delta_z_series[i], 1e9 * resolution_listFN[i]])
+#     csvfile.close()
 
 
 
@@ -486,7 +466,7 @@ xmax = 6
 # plotting the curves
 for i in range(len(delta_z_series)):
     plt.ylim(0.2,1.6)
-    plt.plot(x_array*1e9, matrixIFN[:, i], 'r-')
+    # plt.plot(x_array*1e9, matrixIFN[:, i], 'r-')
     plt.plot(x_array*1e9, matrixI1[:, i], 'k--')
     
     plt.xlim(-xmax, xmax)
@@ -500,4 +480,3 @@ for i in range(len(delta_z_series)):
     plt.title(str(1e6*delta_z_series[i])+r'$\rm \mu$m')
     
     plt.show()
-    
